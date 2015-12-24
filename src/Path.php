@@ -83,13 +83,7 @@ class Path
                 break;
             }
 
-            if ($mode == self::PREPEND) {
-                array_unshift($this->_paths[$package], $path);
-            }
-
-            if ($mode == self::APPEND) {
-                array_push($this->_paths[$package], $path);
-            }
+            $this->_add($path, $package, $mode);
         }
     }
 
@@ -241,5 +235,24 @@ class Path
         }
 
         return null;
+    }
+
+    /**
+     * Add path to hold.
+     *
+     * @param $path
+     * @param $package
+     * @param $mode
+     * @return void
+     */
+    protected function _add($path, $package, $mode)
+    {
+        if ($mode == self::PREPEND) {
+            array_unshift($this->_paths[$package], $path);
+        }
+
+        if ($mode == self::APPEND) {
+            array_push($this->_paths[$package], $path);
+        }
     }
 }
