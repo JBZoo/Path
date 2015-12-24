@@ -106,7 +106,7 @@ class Path
         list($package) = $this->parse($source);
 
         $return = false;
-        if (is_array($this->_paths[$package]) && !empty($keys)) {
+        if (isset($this->_paths[$package]) && is_array($this->_paths[$package]) && !empty($keys)) {
             foreach ($keys as $key) {
                 $key = (int) $key;
                 if (array_key_exists($key, $this->_paths[$package])) {
