@@ -51,8 +51,8 @@ class PathTest extends PHPUnit
             $this->_root,
         );
 
-        $defaultPaths = $path->getPaths();
-        $testPaths    = $path->getPaths('test');
+        $defaultPaths = $path->paths('default:');
+        $testPaths    = $path->paths('test:');
 
         isSame($expected, $testPaths);
         isSame($expected, $defaultPaths);
@@ -76,7 +76,7 @@ class PathTest extends PHPUnit
             $appendPath,
         );
 
-        $package = $path->getPaths();
+        $package = $path->paths('default:');
         isSame($expected, $package);
     }
 
@@ -90,16 +90,16 @@ class PathTest extends PHPUnit
         $path->register($this->_paths);
         $path->register($newPath, $path::DEFAULT_PACKAGE, $path::RESET);
 
-        isSame($newPath, $path->getPaths());
+        isSame($newPath, $path->paths($path::DEFAULT_PACKAGE));
     }
 
-    public function testEmptyPackage()
+    public function testEmptyPaths()
     {
         $path = new Path();
         $path->register($this->_paths);
 
-        $packagePaths = $path->getPaths('alias');
-        isNull($packagePaths);
+        $packagePaths = $path->paths('alias:');
+        isSame(array(), $packagePaths);
     }
 
     public function testIsVirtual()
@@ -187,6 +187,7 @@ class PathTest extends PHPUnit
         $fs->mkdir($dir2);
 
         $_dir = $dir2 . DS . 'simple';
+
         $fs->mkdir($_dir);
 
         $f1 = $dir2 . DS . 'text.txt';
@@ -200,6 +201,14 @@ class PathTest extends PHPUnit
         $fs->dumpFile($f3, '');
         $fs->dumpFile($f4, '');
         $fs->dumpFile($f5, '');
+
+        //  Symlink folder.
+        $symOrigDir = $dir1 . DS . 'sym-dir-orig';
+        $symLink    = $dir1 . DS . 'symlink' . DS . 'folder';
+
+        $fs->mkdir($symOrigDir);
+        $fs->dumpFile($symOrigDir . DS . 'test-symlink.txt', '');
+        $fs->symlink($symOrigDir, $symLink, true);
 
         $path->register($paths);
 
@@ -220,6 +229,11 @@ class PathTest extends PHPUnit
         isSame($path->normalize($f5), $path->path('default:\\simple' . DS . 'file.txt'));
         isSame($path->normalize($f5), $path->path('default:\/simple' . DS . 'file.txt'));
         isNull($path->path('alias:/simple' . DS . 'file.txt'));
+
+        isSame(
+            $path->normalize($symLink . DS . 'test-symlink.txt'),
+            $path->path('default:symlink/folder/test-symlink.txt')
+        );
 
         $fs->remove($dir1);
     }

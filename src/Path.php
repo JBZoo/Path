@@ -95,24 +95,14 @@ class Path
     }
 
     /**
-     * Find actual file or directory in the paths.
-     * @param $paths
-     * @param $file
-     * @return null|string
+     * Get all absolute path to a file or a directory.
+     * @param $source (example: "default:file.txt")
+     * @return mixed
      */
-    protected function _find($paths, $file)
+    public function paths($source)
     {
-        $paths = (array) $paths;
-        $file  = ltrim($file, "\\/");
-
-        foreach ($paths as $path) {
-            $fullPath = $this->normalize($path . '/' . $file);
-            if (file_exists($fullPath)) {
-                return $fullPath;
-            }
-        }
-
-        return null;
+        list(, $paths) = $this->parse($source);
+        return $paths;
     }
 
     /**
@@ -164,20 +154,6 @@ class Path
     }
 
     /**
-     * Get paths by package name.
-     * @param string $package
-     * @return null
-     */
-    public function getPaths($package = Path::DEFAULT_PACKAGE)
-    {
-        if (isset($this->_paths[$package])) {
-            return $this->_paths[$package];
-        }
-
-        return null;
-    }
-
-    /**
      * Check virtual or real path.
      * @param $path
      * @return bool
@@ -201,5 +177,26 @@ class Path
     {
         $path = FS::clean($path, '/');
         return preg_match('|^(?P<prefix>([a-zA-Z]+:)?//?)|', $path, $matches) ? $matches['prefix'] : null;
+    }
+
+    /**
+     * Find actual file or directory in the paths.
+     * @param $paths
+     * @param $file
+     * @return null|string
+     */
+    protected function _find($paths, $file)
+    {
+        $paths = (array) $paths;
+        $file  = ltrim($file, "\\/");
+
+        foreach ($paths as $path) {
+            $fullPath = $this->normalize($path . '/' . $file);
+            if (file_exists($fullPath)) {
+                return $fullPath;
+            }
+        }
+
+        return null;
     }
 }
