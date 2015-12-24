@@ -51,8 +51,8 @@ class PathTest extends PHPUnit
             $this->_root,
         );
 
-        $defaultPaths = $path->paths('default:');
-        $testPaths    = $path->paths('test:');
+        $defaultPaths = $path->getPaths('default:');
+        $testPaths    = $path->getPaths('test:');
 
         isSame($expected, $testPaths);
         isSame($expected, $defaultPaths);
@@ -76,7 +76,7 @@ class PathTest extends PHPUnit
             $appendPath,
         );
 
-        $package = $path->paths('default:');
+        $package = $path->getPaths('default:');
         isSame($expected, $package);
     }
 
@@ -90,7 +90,7 @@ class PathTest extends PHPUnit
         $path->register($this->_paths);
         $path->register($newPath, $path::DEFAULT_PACKAGE, $path::RESET);
 
-        isSame($newPath, $path->paths($path::DEFAULT_PACKAGE));
+        isSame($newPath, $path->getPaths($path::DEFAULT_PACKAGE));
     }
 
     public function testEmptyPaths()
@@ -98,7 +98,7 @@ class PathTest extends PHPUnit
         $path = new Path();
         $path->register($this->_paths);
 
-        $packagePaths = $path->paths('alias:');
+        $packagePaths = $path->getPaths('alias:');
         isSame(array(), $packagePaths);
     }
 
@@ -212,27 +212,27 @@ class PathTest extends PHPUnit
 
         $path->register($paths);
 
-        isSame($path->normalize($f1), $path->path('default:text.txt'));
-        isSame($path->normalize($f2), $path->path('default:file.pot'));
+        isSame($path->normalize($f1), $path->get('default:text.txt'));
+        isSame($path->normalize($f2), $path->get('default:file.pot'));
 
-        isSame($path->normalize($dir2 . DS . 'style.less'), $path->path('default:/style.less'));
-        isSame($path->normalize($dir2 . DS . 'style.less'), $path->path('default:\style.less'));
-        isSame($path->normalize($dir2 . DS . 'style.less'), $path->path('default:\/style.less'));
-        isSame($path->normalize($dir2 . DS . 'style.less'), $path->path('default:\\\style.less'));
-        isSame($path->normalize($dir2 . DS . 'style.less'), $path->path('default:///style.less'));
+        isSame($path->normalize($dir2 . DS . 'style.less'), $path->get('default:/style.less'));
+        isSame($path->normalize($dir2 . DS . 'style.less'), $path->get('default:\style.less'));
+        isSame($path->normalize($dir2 . DS . 'style.less'), $path->get('default:\/style.less'));
+        isSame($path->normalize($dir2 . DS . 'style.less'), $path->get('default:\\\style.less'));
+        isSame($path->normalize($dir2 . DS . 'style.less'), $path->get('default:///style.less'));
 
-        isSame($path->normalize($f5), $path->path('default:simple/file.txt'));
-        isSame($path->normalize($f5), $path->path('default:simple\file.txt'));
-        isSame($path->normalize($f5), $path->path('default:simple\\\\file.txt'));
-        isSame($path->normalize($f5), $path->path('default:simple////file.txt'));
-        isSame($path->normalize($f5), $path->path('default:simple' . DS . 'file.txt'));
-        isSame($path->normalize($f5), $path->path('default:\\simple' . DS . 'file.txt'));
-        isSame($path->normalize($f5), $path->path('default:\/simple' . DS . 'file.txt'));
-        isNull($path->path('alias:/simple' . DS . 'file.txt'));
+        isSame($path->normalize($f5), $path->get('default:simple/file.txt'));
+        isSame($path->normalize($f5), $path->get('default:simple\file.txt'));
+        isSame($path->normalize($f5), $path->get('default:simple\\\\file.txt'));
+        isSame($path->normalize($f5), $path->get('default:simple////file.txt'));
+        isSame($path->normalize($f5), $path->get('default:simple' . DS . 'file.txt'));
+        isSame($path->normalize($f5), $path->get('default:\\simple' . DS . 'file.txt'));
+        isSame($path->normalize($f5), $path->get('default:\/simple' . DS . 'file.txt'));
+        isNull($path->get('alias:/simple' . DS . 'file.txt'));
 
         isSame(
             $path->normalize($symLink . DS . 'test-symlink.txt'),
-            $path->path('default:symlink/folder/test-symlink.txt')
+            $path->get('default:symlink/folder/test-symlink.txt')
         );
 
         $fs->remove($dir1);

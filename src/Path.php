@@ -88,7 +88,7 @@ class Path
      * @param $source (example: "default:file.txt")
      * @return null|string
      */
-    public function path($source)
+    public function get($source)
     {
         list(, $paths, $path) = $this->parse($source);
         return $this->_find($paths, $path);
@@ -99,7 +99,7 @@ class Path
      * @param $source (example: "default:file.txt")
      * @return mixed
      */
-    public function paths($source)
+    public function getPaths($source)
     {
         list(, $paths) = $this->parse($source);
         return $paths;
