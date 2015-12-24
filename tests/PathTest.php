@@ -179,6 +179,7 @@ class PathTest extends PHPUnit
 
         $paths = array(
             $this->_root . DS . 'folder',
+            $this->_root . DS . 'folder',
             $this->_root . DS . 'folder' . DS . 'folder',
         );
 
@@ -236,5 +237,66 @@ class PathTest extends PHPUnit
         );
 
         $fs->remove($dir1);
+    }
+
+    public function testCheckRemovePaths()
+    {
+        $path = new Path();
+
+        $path->register(array(
+            $this->_root,
+            $this->_root . DS . 'folder',
+            $this->_root . DS . 'folder-2',
+            $this->_root . DS . 'folder-3',
+            $this->_root . DS . 'folder-4',
+            $this->_root . DS . 'folder-5',
+            $this->_root . DS . 'folder-6',
+        ));
+
+        $path->remove('default:', array(1, 3, 5));
+        isSame(array(
+            0 => $this->_root . DS . 'folder-6',
+            2 => $this->_root . DS . 'folder-4',
+            4 => $this->_root . DS . 'folder-2',
+            6 => $this->_root,
+        ), $path->getPaths('default'));
+
+        $path->remove('default:', 0);
+        isSame(array(
+            2 => $this->_root . DS . 'folder-4',
+            4 => $this->_root . DS . 'folder-2',
+            6 => $this->_root,
+        ), $path->getPaths('default'));
+
+        $path->remove('default:', '2');
+        isSame(array(
+            4 => $this->_root . DS . 'folder-2',
+            6 => $this->_root,
+        ), $path->getPaths('default'));
+
+        $path->remove('default:', array(4, '6'));
+        isEmpty($path->getPaths('default'));
+    }
+
+    public function testRemove()
+    {
+        $path = new Path();
+
+        $path->register(array(
+            $this->_root,
+            $this->_root . DS . 'folder',
+            $this->_root . DS . 'folder-2',
+            $this->_root . DS . 'folder-3',
+            $this->_root . DS . 'folder-4',
+        ));
+
+        isTrue($path->remove('default:', 1));
+        isTrue($path->remove('default:', '3'));
+        isTrue($path->remove('default:', array(4.0)));
+        isTrue($path->remove('default:', array(0, '2')));
+        isFalse($path->remove('default:', array(2)));
+
+        isFalse($path->remove('alias:', array(2)));
+        isFalse($path->remove('alias:', array('5', 10, '123')));
     }
 }

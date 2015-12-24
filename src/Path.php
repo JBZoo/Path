@@ -25,36 +25,42 @@ class Path
 
     /**
      * Default package name.
+     *
      * @var string
      */
     const DEFAULT_PACKAGE = 'default';
 
     /**
      * Prepend rule add paths.
+     *
      * @var string
      */
     const PREPEND = 'prepend';
 
     /**
      * Append rule add paths.
+     *
      * @var string
      */
     const APPEND = 'append';
 
     /**
      * Reset all registered paths.
+     *
      * @var bool
      */
     const RESET = true;
 
     /**
      * Holds paths list.
+     *
      * @var array
      */
     protected $_paths = array();
 
     /**
      * Register package locations in file system.
+     *
      * @param $paths
      * @param string $package
      * @param string $mode
@@ -73,6 +79,10 @@ class Path
                 $this->_paths[$package] = array();
             }
 
+            if (in_array($path, $this->_paths[$package])) {
+                break;
+            }
+
             if ($mode == self::PREPEND) {
                 array_unshift($this->_paths[$package], $path);
             }
@@ -84,7 +94,34 @@ class Path
     }
 
     /**
+     * Remove path from registered paths.
+     *
+     * @param $source (example: "default:file.txt")
+     * @param $key
+     * @return bool
+     */
+    public function remove($source, $key)
+    {
+        $keys = (array) $key;
+        list($package) = $this->parse($source);
+
+        $return = false;
+        if (is_array($this->_paths[$package]) && !empty($keys)) {
+            foreach ($keys as $key) {
+                $key = (int) $key;
+                if (array_key_exists($key, $this->_paths[$package])) {
+                    unset($this->_paths[$package][$key]);
+                    $return = true;
+                }
+            }
+        }
+
+        return $return;
+    }
+
+    /**
      * Get absolute path to a file or a directory.
+     *
      * @param $source (example: "default:file.txt")
      * @return null|string
      */
@@ -96,6 +133,7 @@ class Path
 
     /**
      * Get all absolute path to a file or a directory.
+     *
      * @param $source (example: "default:file.txt")
      * @return mixed
      */
@@ -107,6 +145,7 @@ class Path
 
     /**
      * Normalize path.
+     *
      * @param $path
      * @return string
      */
@@ -131,6 +170,7 @@ class Path
 
     /**
      * Parse source string.
+     *
      * @param $source (example: "default:file.txt")
      * @param string $package
      * @return array
@@ -155,6 +195,7 @@ class Path
 
     /**
      * Check virtual or real path.
+     *
      * @param $path
      * @return bool
      */
@@ -170,6 +211,7 @@ class Path
 
     /**
      * Get path prefix.
+     *
      * @param $path
      * @return null
      */
@@ -181,6 +223,7 @@ class Path
 
     /**
      * Find actual file or directory in the paths.
+     *
      * @param $paths
      * @param $file
      * @return null|string
