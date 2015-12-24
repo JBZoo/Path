@@ -17,7 +17,8 @@
         "jbzoo/utils": "1.*"
     },
     "require-dev"       : {
-        "jbzoo/phpunit" : "^1.0"
+        "jbzoo/phpunit" : "^1.0",
+        "symfony/filesystem" : "^2.8"
     },
     "autoload"          : {
         "psr-4" : {

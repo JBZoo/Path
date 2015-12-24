@@ -16,6 +16,8 @@ namespace JBZoo\PHPUnit;
 
 use JBZoo\Path\Path;
 use JBZoo\Path\Exception;
+use JBZoo\Utils\FS;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Class PathTest
@@ -24,31 +26,28 @@ use JBZoo\Path\Exception;
 class PathTest extends PHPUnit
 {
 
-    protected $_ds;
     protected $_root;
     protected $_paths = array();
 
     public function setup()
     {
         $this->_root = __DIR__;
-        $this->_ds   = DIRECTORY_SEPARATOR;
 
         $this->_paths = array(
             $this->_root,
-            $this->_root . $this->_ds . 'folder'
+            $this->_root . DS . 'folder'
         );
     }
 
     public function testRegisterAppend()
     {
-        $path  = new Path();
-        $paths = $this->_paths;
+        $path = new Path();
 
-        $path->register($paths);
-        $path->register($paths, 'test');
+        $path->register($this->_paths);
+        $path->register($this->_paths, 'test');
 
         $expected = array(
-            $this->_root . $this->_ds . 'folder',
+            $this->_root . DS . 'folder',
             $this->_root,
         );
 
@@ -64,7 +63,7 @@ class PathTest extends PHPUnit
         $path  = new Path();
         $paths = $this->_paths;
 
-        $appendPath = $this->_root . $this->_ds . 'append';
+        $appendPath = $this->_root . DS . 'append';
 
         $path->register($paths);
         $path->register($appendPath, Path::DEFAULT_PACKAGE, Path::APPEND);
@@ -72,7 +71,7 @@ class PathTest extends PHPUnit
         array_push($paths, $appendPath);
 
         $expected = array(
-            $this->_root . $this->_ds . 'folder',
+            $this->_root . DS . 'folder',
             $this->_root,
             $appendPath,
         );
@@ -83,14 +82,12 @@ class PathTest extends PHPUnit
 
     public function testRegisterReset()
     {
-        $path  = new Path();
-        $paths = $this->_paths;
-
+        $path    = new Path();
         $newPath = array(
-            $this->_root . $this->_ds . 'new-folder'
+            $this->_root . DS . 'new-folder'
         );
 
-        $path->register($paths);
+        $path->register($this->_paths);
         $path->register($newPath, $path::DEFAULT_PACKAGE, $path::RESET);
 
         isSame($newPath, $path->getPaths());
@@ -139,20 +136,19 @@ class PathTest extends PHPUnit
 
     public function testParseVirtual()
     {
-        $path  = new Path();
-        $paths = $this->_paths;
+        $path = new Path();
 
-        $path->register($paths);
+        $path->register($this->_paths);
         $parse1 = $path->parse('default:text.txt');
 
-        $path->register($paths, 'package');
+        $path->register($this->_paths, 'package');
         $parse2 = $path->parse('package:folder/text.txt');
 
-        $path->register($paths, 'alias');
+        $path->register($this->_paths, 'alias');
         $parse3 = $path->parse('my/folder', 'alias');
 
         $expectedPaths = array(
-            $this->_root . $this->_ds . 'folder',
+            $this->_root . DS . 'folder',
             $this->_root,
         );
 
@@ -163,5 +159,68 @@ class PathTest extends PHPUnit
         isSame($expected1, $parse1);
         isSame($expected2, $parse2);
         isSame($expected3, $parse3);
+    }
+
+    public function testNormalize()
+    {
+        $path = new Path();
+
+        isSame(FS::clean(__DIR__, '/'), $path->normalize(__DIR__));
+        isSame('test/path/folder', $path->normalize('../test/path/folder/'));
+        isSame('test/path/folder', $path->normalize('../../test/path/folder/'));
+        isSame('test/path/folder', $path->normalize('..\..\test\path\folder\\'));
+        isSame('test/path/folder', $path->normalize('..\../test///path/\/\folder/\\'));
+    }
+
+    public function testPathSuccess()
+    {
+        $path = new Path();
+        $fs   = new Filesystem();
+
+        $paths = array(
+            $this->_root . DS . 'folder',
+            $this->_root . DS . 'folder' . DS . 'folder',
+        );
+
+        list($dir1, $dir2) = $paths;
+
+        $fs->mkdir($dir2);
+
+        $_dir = $dir2 . DS . 'simple';
+        $fs->mkdir($_dir);
+
+        $f1 = $dir2 . DS . 'text.txt';
+        $f2 = $dir2 . DS . 'file.pot';
+        $f3 = $dir1 . DS . 'style.less';
+        $f4 = $dir2 . DS . 'style.less';
+        $f5 = $_dir . DS . 'file.txt';
+
+        $fs->dumpFile($f1, '');
+        $fs->dumpFile($f2, '');
+        $fs->dumpFile($f3, '');
+        $fs->dumpFile($f4, '');
+        $fs->dumpFile($f5, '');
+
+        $path->register($paths);
+
+        isSame($path->normalize($f1), $path->path('default:text.txt'));
+        isSame($path->normalize($f2), $path->path('default:file.pot'));
+
+        isSame($path->normalize($dir2 . DS . 'style.less'), $path->path('default:/style.less'));
+        isSame($path->normalize($dir2 . DS . 'style.less'), $path->path('default:\style.less'));
+        isSame($path->normalize($dir2 . DS . 'style.less'), $path->path('default:\/style.less'));
+        isSame($path->normalize($dir2 . DS . 'style.less'), $path->path('default:\\\style.less'));
+        isSame($path->normalize($dir2 . DS . 'style.less'), $path->path('default:///style.less'));
+
+        isSame($path->normalize($f5), $path->path('default:simple/file.txt'));
+        isSame($path->normalize($f5), $path->path('default:simple\file.txt'));
+        isSame($path->normalize($f5), $path->path('default:simple\\\\file.txt'));
+        isSame($path->normalize($f5), $path->path('default:simple////file.txt'));
+        isSame($path->normalize($f5), $path->path('default:simple' . DS . 'file.txt'));
+        isSame($path->normalize($f5), $path->path('default:\\simple' . DS . 'file.txt'));
+        isSame($path->normalize($f5), $path->path('default:\/simple' . DS . 'file.txt'));
+        isNull($path->path('alias:/simple' . DS . 'file.txt'));
+
+        $fs->remove($dir1);
     }
 }

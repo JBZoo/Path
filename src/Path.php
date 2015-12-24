@@ -84,8 +84,64 @@ class Path
     }
 
     /**
-     * Parse source path.
-     * @param $source
+     * Get absolute path to a file or a directory.
+     * @param $source (example: "default:file.txt")
+     * @return null|string
+     */
+    public function path($source)
+    {
+        list(, $paths, $path) = $this->parse($source);
+        return $this->_find($paths, $path);
+    }
+
+    /**
+     * Find actual file or directory in the paths.
+     * @param $paths
+     * @param $file
+     * @return null|string
+     */
+    protected function _find($paths, $file)
+    {
+        $paths = (array) $paths;
+        $file  = ltrim($file, "\\/");
+
+        foreach ($paths as $path) {
+            $fullPath = $this->normalize($path . '/' . $file);
+            if (file_exists($fullPath)) {
+                return $fullPath;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Normalize path.
+     * @param $path
+     * @return string
+     */
+    public function normalize($path)
+    {
+        $tokens = array();
+        $path   = FS::clean($path, '/');
+        $prefix = preg_match('|^(?P<prefix>([a-zA-Z]+:)?//?)|', $path, $matches) ? $matches['prefix'] : '';
+        $path   = substr($path, strlen($prefix));
+        $parts  = array_filter(explode('/', $path), 'strlen');
+
+        foreach ($parts as $part) {
+            if ('..' === $part) {
+                array_pop($tokens);
+            } elseif ('.' !== $part) {
+                array_push($tokens, $part);
+            }
+        }
+
+        return $prefix . implode('/', $tokens);
+    }
+
+    /**
+     * Parse source string.
+     * @param $source (example: "default:file.txt")
      * @param string $package
      * @return array
      */
@@ -128,7 +184,7 @@ class Path
      */
     public function isVirtual($path)
     {
-        if ($this->prefix($path)) {
+        if ($this->prefix($path) !== null) {
             return false;
         }
 
