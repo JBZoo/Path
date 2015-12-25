@@ -116,6 +116,8 @@ class PathTest extends PHPUnit
         isFalse($path->isVirtual(__DIR__));
         isFalse($path->isVirtual(dirname(__DIR__)));
         isFalse($path->isVirtual('/folder/file.txt'));
+        isFalse($path->isVirtual('alias:/styles.css'));
+        isFalse($path->isVirtual('alias:\styles.css'));
     }
 
     public function testHasPrefix()
@@ -331,5 +333,47 @@ class PathTest extends PHPUnit
         $path->setRoot($dir);
         isSame(__DIR__, $path->getRoot());
         $fs->remove($dir);
+    }
+
+    public function testRelative()
+    {
+        $path = new Path();
+        $fs   = new Filesystem();
+        $path->setRoot(__DIR__);
+
+        // Check absolute path to relative.
+        isSame('file.txt', $path->relative(__DIR__ . '\/\file.txt'));
+        isSame('file.txt', $path->relative(__DIR__ . '\\\\file.txt'));
+        isSame('file.txt', $path->relative(__DIR__ . DS . 'file.txt'));
+        isSame('folder/file.txt', $path->relative(__DIR__ . DS . 'folder\\\\\\file.txt'));
+        isSame('folder/file.txt', $path->relative(__DIR__ . DS . 'folder\\\\//file.txt'));
+        isSame('folder/file.txt', $path->relative(__DIR__ . DS . 'folder' . DS . 'file.txt'));
+
+        //  Check virtual path to relative.
+        $paths = array(
+            __DIR__ . DS . 'folder-1',
+            __DIR__ . DS . 'folder-2',
+            __DIR__ . DS . 'folder',
+        );
+
+        list($dir1, $dir2, $dir3) = $paths;
+
+        $fs->dumpFile($dir1 . DS . 'file1.txt', '');
+        $fs->dumpFile($dir2 . DS . 'file2.txt', '');
+        $fs->dumpFile($dir3 . DS . 'hello' . DS . 'file3.txt', '');
+
+        $path->register($paths);
+
+        isSame('folder-1/file1.txt', $path->relative('default:file1.txt'));
+        isSame('folder-1/file1.txt', $path->relative('default:file1.txt/'));
+        isSame('folder-1/file1.txt', $path->relative('default:file1.txt\\'));
+        isSame('folder-2/file2.txt', $path->relative('default:/file2.txt'));
+        isSame('folder-2/file2.txt', $path->relative('default:\\/file2.txt'));
+        isSame('folder/hello/file3.txt', $path->relative('default:hello/file3.txt'));
+        isSame('folder/hello/file3.txt', $path->relative('default:/hello/file3.txt'));
+        isSame('folder/hello/file3.txt', $path->relative('default:hello////file3.txt'));
+        isSame('folder/hello/file3.txt', $path->relative('default:hello\\\\\\file3.txt/'));
+
+        $fs->remove(array($dir1, $dir2, $dir3));
     }
 }

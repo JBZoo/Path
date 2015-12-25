@@ -234,11 +234,13 @@ class Path
      */
     public function isVirtual($path)
     {
-        if ($this->prefix($path) !== null) {
+        $parts = explode(':', $path, 2);
+
+        list($package) = $parts;
+        if ($this->prefix($path) !== null && !array_key_exists($package, $this->_paths)) {
             return false;
         }
 
-        $parts = explode(':', $path, 2);
         return (count($parts) == 2) ? true : false;
     }
 
@@ -252,6 +254,27 @@ class Path
     {
         $path = FS::clean($path, '/');
         return preg_match('|^(?P<prefix>([a-zA-Z]+:)?//?)|', $path, $matches) ? $matches['prefix'] : null;
+    }
+
+    /**
+     * Get relative path.
+     *
+     * @param $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
+     * @return string
+     */
+    public function relative($path)
+    {
+        $root    = preg_quote(FS::clean($this->_root, '/'), '/');
+        $subject = FS::clean($path, '/');
+        $pattern = '/^'. $root .'/i';
+
+        if ($this->isVirtual($path)) {
+            $path    = FS::clean($this->get($path), '/');
+            $path    = ltrim($path, "\\/");
+            $subject = $path;
+        }
+
+        return ltrim(preg_replace($pattern, '', $subject), '/');
     }
 
     /**
