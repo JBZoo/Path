@@ -1,4 +1,4 @@
-# JBZoo Path  [![Build Status](https://travis-ci.org/JBZoo/Path.svg?branch=master)](https://travis-ci.org/JBZoo/Path)      [![Coverage Status](https://coveralls.io/repos/JBZoo/Path/badge.svg?branch=master&service=github)](https://coveralls.io/github/JBZoo/Path?branch=master)  ![TC](http://ci.jbzoo.com/app/rest/builds/buildType:(id:Libraries_JBZooPath)/statusIcon)
+# JBZoo Path  [![Build Status](https://travis-ci.org/JBZoo/Path.svg?branch=master)](https://travis-ci.org/JBZoo/Path)      [![Coverage Status](https://coveralls.io/repos/JBZoo/Path/badge.svg?branch=master&service=github)](https://coveralls.io/github/JBZoo/Path?branch=master)  [![TC](http://ci.jbzoo.com/app/rest/builds/buildType:(id:Libraries_JBZooPath)/statusIcon)](http://ci.jbzoo.com/viewType.html?buildTypeId=Libraries_JBZooPath)
 
 #### PHP library description
 
