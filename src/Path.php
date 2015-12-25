@@ -186,7 +186,7 @@ class Path
     {
         $tokens = array();
         $path   = FS::clean($path, '/');
-        $prefix = preg_match('|^(?P<prefix>([a-zA-Z]+:)?//?)|', $path, $matches) ? $matches['prefix'] : '';
+        $prefix = $this->prefix($path);
         $path   = substr($path, strlen($prefix));
         $parts  = array_filter(explode('/', $path), 'strlen');
 
@@ -266,13 +266,17 @@ class Path
     {
         $root    = preg_quote(FS::clean($this->_root, '/'), '/');
         $subject = FS::clean($path, '/');
-        $pattern = '/^'. $root .'/i';
+        $pattern = '/^' . $root . '/i';
 
         if ($this->isVirtual($path)) {
             $path    = FS::clean($this->get($path), '/');
             $path    = ltrim($path, "\\/");
             $subject = $path;
         }
+
+        var_dump($root);
+        var_dump($subject);
+        var_dump(ltrim(preg_replace($pattern, '', $subject), '/'));
 
         return ltrim(preg_replace($pattern, '', $subject), '/');
     }
