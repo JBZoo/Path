@@ -270,13 +270,8 @@ class Path
 
         if ($this->isVirtual($path)) {
             $path    = FS::clean($this->get($path), '/');
-            $path    = ltrim($path, "\\/");
             $subject = $path;
         }
-
-        var_dump($root);
-        var_dump($subject);
-        var_dump(ltrim(preg_replace($pattern, '', $subject), '/'));
 
         return ltrim(preg_replace($pattern, '', $subject), '/');
     }
