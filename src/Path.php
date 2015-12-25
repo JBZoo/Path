@@ -59,6 +59,45 @@ class Path
     protected $_paths = array();
 
     /**
+     * Hold root dir.
+     *
+     * @var
+     */
+    protected $_root;
+
+    /**
+     * Setup root directory.
+     *
+     * @param $dir
+     * @throws Exception
+     */
+    public function setRoot($dir)
+    {
+        if (!is_dir($dir)) {
+            throw new Exception(sprintf('Not found directory: %s', $dir));
+        }
+
+        if (!isset($this->_root)) {
+            $this->_root = $dir;
+        }
+    }
+
+    /**
+     * Get root directory.
+     *
+     * @return mixed
+     * @throws Exception
+     */
+    public function getRoot()
+    {
+        if (!isset($this->_root)) {
+            throw new Exception(sprintf('The root directory has not been set'));
+        }
+
+        return $this->_root;
+    }
+
+    /**
      * Register package locations in file system.
      *
      * @param $paths

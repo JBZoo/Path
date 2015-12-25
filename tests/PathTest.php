@@ -15,8 +15,8 @@
 namespace JBZoo\PHPUnit;
 
 use JBZoo\Path\Path;
-use JBZoo\Path\Exception;
 use JBZoo\Utils\FS;
+use JBZoo\Path\Exception;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -298,5 +298,38 @@ class PathTest extends PHPUnit
 
         isFalse($path->remove('alias:', array(2)));
         isFalse($path->remove('alias:', array('5', 10, '123')));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testSetRootFailed()
+    {
+        $path = new Path();
+        $path->setRoot(__DIR__ . DS . mt_rand());
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testGetRootFailed()
+    {
+        $path = new Path();
+        $path->getRoot();
+    }
+
+    public function testSetRoot()
+    {
+        $path = new Path();
+        $fs   = new Filesystem();
+        $dir  = __DIR__ . DS . mt_rand();
+
+        $path->setRoot(__DIR__);
+        isSame(__DIR__, $path->getRoot());
+
+        $fs->mkdir($dir);
+        $path->setRoot($dir);
+        isSame(__DIR__, $path->getRoot());
+        $fs->remove($dir);
     }
 }
