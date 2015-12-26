@@ -10,6 +10,7 @@
  * @license   MIT
  * @copyright Copyright (C) JBZoo.com,  All rights reserved.
  * @link      https://github.com/JBZoo/Path
+ * @author    Sergey Kalistratov <kalistratov.s.m@gmail.com>
  */
 
 namespace JBZoo\Path;
@@ -100,13 +101,18 @@ class Path
     /**
      * Register package locations in file system.
      *
-     * @param $paths
+     * @param string|array $paths
      * @param string $package
      * @param string $mode
+     * @throws Exception
      */
     public function register($paths, $package = Path::DEFAULT_PACKAGE, $mode = Path::PREPEND)
     {
         $paths = (array) $paths;
+
+        if (strlen($package) < 3) {
+            throw new Exception('The minimum number of characters is 3');
+        }
 
         if ($mode === self::RESET) {
             $this->_paths[$package] = $paths;

@@ -10,6 +10,7 @@
  * @license   MIT
  * @copyright Copyright (C) JBZoo.com,  All rights reserved.
  * @link      https://github.com/JBZoo/Path
+ * @author    Sergey Kalistratov <kalistratov.s.m@gmail.com>
  */
 
 namespace JBZoo\PHPUnit;
@@ -88,9 +89,20 @@ class PathTest extends PHPUnit
         );
 
         $path->register($this->_paths);
-        $path->register($newPath, $path::DEFAULT_PACKAGE, $path::RESET);
+        $path->register($newPath, Path::DEFAULT_PACKAGE, Path::RESET);
 
-        isSame($newPath, $path->getPaths($path::DEFAULT_PACKAGE));
+        isSame($newPath, $path->getPaths(Path::DEFAULT_PACKAGE));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testRegisterMinLength()
+    {
+        $path    = new Path();
+        $path->register($this->_root, '');
+        $path->register($this->_root, 'a');
+        $path->register($this->_root, 'ab');
     }
 
     public function testEmptyPaths()
