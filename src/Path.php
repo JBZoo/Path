@@ -390,7 +390,7 @@ class Path
      *
      * @param string $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
      * @param string $package
-     * @param string $mode
+     * @param string|bool $mode
      * @return void
      */
     protected function _add($path, $package, $mode)
@@ -436,7 +436,7 @@ class Path
      *
      * @param string|array $paths (example: "default:file.txt" or "C:/Server/public_html/index.php")
      * @param string $package
-     * @param bool $mode
+     * @param string|bool $mode
      */
     protected function _reset($paths, $package, $mode)
     {
