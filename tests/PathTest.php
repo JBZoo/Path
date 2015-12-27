@@ -445,11 +445,6 @@ class PathTest extends PHPUnit
         isSame($file1, $path->url($path2 . DS . 'file1.txt'));
         isSame($file2, $path->url($path1 . DS . 'file0.txt'));
         isSame($file2, $path->url($path1 . '/file0.txt'));
-        var_dump($file2);
-        var_dump($path1);
-        var_dump($path1 . '\\\\file0.txt');
-        var_dump($path->url($path1 . '\\\\file0.txt'));
-        isSame($file2, $path->url($path1 . '\\\\file0.txt')); //
         isSame($file3, $path->url($this->_root . '\my-folder2\my-file.txt'));
         isSame($file3, $path->url($this->_root . '/my-folder2////my-file.txt'));
         isSame($file3, $path->url($this->_root . DS . 'my-folder2' . DS . 'my-file.txt'));
