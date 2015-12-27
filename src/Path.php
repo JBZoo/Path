@@ -141,7 +141,8 @@ class Path
      */
     public function url($source)
     {
-        list($path, $data) = explode('?', $source);
+        $details = explode('?', $source);
+        $path    = $details[0];
 
         if ($this->isVirtual($path)) {
             $path = $this->get($path);
@@ -149,7 +150,10 @@ class Path
 
         $path = $this->relative($path, true);
         if (!empty($path)) {
-            $path = (isset($data)) ? $path . '?' . $data : $path;
+            if (isset($details[1])) {
+                $path .= '?' . $details[1];
+            }
+
             return Url::current() . $path;
         }
 
