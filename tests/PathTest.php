@@ -17,6 +17,7 @@ namespace JBZoo\PHPUnit;
 
 use JBZoo\Path\Path;
 use JBZoo\Utils\FS;
+use JBZoo\Utils\Url;
 use JBZoo\Path\Exception;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -315,7 +316,7 @@ class PathTest extends PHPUnit
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \JBZoo\Path\Exception
      */
     public function testSetRootFailed()
     {
@@ -324,7 +325,7 @@ class PathTest extends PHPUnit
     }
 
     /**
-     * @expectedException Exception
+     * @expectedException \JBZoo\Path\Exception
      */
     public function testGetRootFailed()
     {
@@ -361,6 +362,9 @@ class PathTest extends PHPUnit
         isSame('folder/file.txt', $path->relative(__DIR__ . DS . 'folder\\\\//file.txt'));
         isSame('folder/file.txt', $path->relative(__DIR__ . DS . 'folder' . DS . 'file.txt'));
 
+        isEmpty($path->relative(__DIR__ . '\/\file.txt', true));
+        isEmpty($path->relative(__DIR__ . '\\\\file.txt', true));
+
         //  Check virtual path to relative.
         $paths = array(
             __DIR__ . DS . 'folder-1',
@@ -387,5 +391,77 @@ class PathTest extends PHPUnit
         isSame('folder/hello/file3.txt', $path->relative('default:hello\\\\\\file3.txt/'));
 
         $fs->remove(array($dir1, $dir2, $dir3));
+    }
+
+    /**
+     * @expectedException \JBZoo\Path\Exception
+     */
+    public function testRelativeFail()
+    {
+        $path = new Path();
+        $path->register($this->_paths);
+        $path->relative('default:file.txt');
+        $path->relative(__DIR__);
+    }
+
+    public function testUrl()
+    {
+        $path = new Path();
+        $fs   = new Filesystem();
+
+        $_SERVER['HTTP_HOST']   = 'test.dev';
+        $_SERVER['SERVER_PORT'] = 80;
+        $_SERVER['REQUEST_URI'] = '/';
+
+        $paths = array(
+            $this->_root . DS . 'my-folder',
+            $this->_root . DS . 'my-folder2' . DS . 'dir',
+            $this->_root,
+        );
+
+        foreach ($paths as $key => $p) {
+            $fs->mkdir($p);
+            $fs->dumpFile($p . DS . 'file' . $key . '.txt', '');
+        }
+
+        $fs->dumpFile($this->_root . DS . 'my-folder2' . DS . 'my-file.txt', '');
+
+        list($path1, $path2) = $paths;
+
+        $path->setRoot($this->_root);
+        $path->register($paths);
+
+        $current = Url::current();
+
+        $file1 = $current . 'my-folder2/dir/file1.txt';
+        $file2 = $current . 'my-folder/file0.txt';
+        $file3 = $current . 'my-folder2/my-file.txt';
+
+        isSame($file1, $path->url('default:file1.txt'));
+        isSame($file3, $path->url('default:my-folder2/my-file.txt'));
+        isSame($file3, $path->url('default:my-folder2\\\\my-file.txt'));
+        isSame($file3, $path->url('default:\my-folder2\my-file.txt'));
+
+        isSame($file1, $path->url($path2 . DS . 'file1.txt'));
+        isSame($file2, $path->url($path1 . DS . 'file0.txt'));
+        isSame($file2, $path->url($path1 . '/file0.txt'));
+        isSame($file2, $path->url($path1 . '\\\\file0.txt'));
+        isSame($file3, $path->url($this->_root . '\my-folder2\my-file.txt'));
+        isSame($file3, $path->url($this->_root . '/my-folder2////my-file.txt'));
+        isSame($file3, $path->url($this->_root . DS . 'my-folder2' . DS . 'my-file.txt'));
+
+        isSame($file2 . '?data=test&value=hello', $path->url($path1 . DS . 'file0.txt?data=test&value=hello'));
+
+        isNull($path->url('default:file.txt'));
+        isNull($path->url('alias:file.txt'));
+
+        isNull($path->url($this->_root . DS . 'my-folder2' . DS . 'file.txt'));
+        isNull($path->url($this->_root . 'my/' . DS . 'file.txt'));
+
+        $fs->remove(array(
+            $path1, $path2,
+            $this->_root . DS . 'my-folder2',
+            $this->_root . DS . 'file2.txt',
+        ));
     }
 }

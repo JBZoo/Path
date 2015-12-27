@@ -16,6 +16,7 @@
 namespace JBZoo\Path;
 
 use JBZoo\Utils\FS;
+use JBZoo\Utils\Url;
 
 /**
  * Class Path
@@ -130,6 +131,29 @@ class Path
 
             $this->_add($path, $package, $mode);
         }
+    }
+
+    /**
+     * Get the absolute url to a file.
+     *
+     * @param $source
+     * @return null|string
+     */
+    public function url($source)
+    {
+        list($path, $data) = explode('?', $source);
+
+        if ($this->isVirtual($path)) {
+            $path = $this->get($path);
+        }
+
+        $path = $this->relative($path, true);
+        if (!empty($path)) {
+            $path = (isset($data)) ? $path . '?' . $data : $path;
+            return Url::current() . $path;
+        }
+
+        return null;
     }
 
     /**
@@ -266,17 +290,27 @@ class Path
      * Get relative path.
      *
      * @param $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
+     * @param bool $exitsFile
      * @return string
+     * @throws Exception
      */
-    public function relative($path)
+    public function relative($path, $exitsFile = false)
     {
+        if ($this->_root == null) {
+            throw new Exception(sprintf('Please, set the root directory'));
+        }
+
         $root    = preg_quote(FS::clean($this->_root, '/'), '/');
         $subject = FS::clean($path, '/');
         $pattern = '/^' . $root . '/i';
 
         if ($this->isVirtual($path)) {
-            $path    = FS::clean($this->get($path), '/');
+            $path    = $this->get($path);
             $subject = $path;
+        }
+
+        if ($exitsFile && !$this->isVirtual($path) && !file_exists($path)) {
+            $subject = null;
         }
 
         return ltrim(preg_replace($pattern, '', $subject), '/');
