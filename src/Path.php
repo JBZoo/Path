@@ -113,9 +113,7 @@ class Path
             throw new Exception('Invalid object key');
         }
 
-        if (!isset(self::$_objects[$key])) {
-            static::$_objects[$key] = $key;
-        }
+        static::$_objects[$key] = $key;
     }
 
     /**
