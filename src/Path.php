@@ -63,7 +63,7 @@ class Path
     /**
      * Hold root dir.
      *
-     * @var
+     * @var string
      */
     protected $_root;
 
@@ -119,7 +119,7 @@ class Path
     /**
      * Setup root directory.
      *
-     * @param $dir
+     * @param string $dir
      * @throws Exception
      */
     public function setRoot($dir)
@@ -188,7 +188,7 @@ class Path
     /**
      * Get the absolute url to a file.
      *
-     * @param $source
+     * @param string $source (example: "default:file.txt" or "C:\server\test.dev\file.txt")
      * @return null|string
      */
     public function url($source)
@@ -213,7 +213,7 @@ class Path
      * Remove path from registered paths.
      *
      * @param $source (example: "default:file.txt")
-     * @param $key
+     * @param string|array $key
      * @return bool
      */
     public function remove($source, $key)
@@ -262,7 +262,7 @@ class Path
     /**
      * Normalize path.
      *
-     * @param $path
+     * @param string $path ("C:\server\test.dev\file.txt")
      * @return string
      */
     public function normalize($path)
@@ -287,7 +287,7 @@ class Path
     /**
      * Parse source string.
      *
-     * @param $source (example: "default:file.txt")
+     * @param string $source (example: "default:file.txt")
      * @param string $package
      * @return array
      */
@@ -312,7 +312,7 @@ class Path
     /**
      * Check virtual or real path.
      *
-     * @param $path
+     * @param string $path (example: "default:file.txt" or "C:\server\test.dev\file.txt")
      * @return bool
      */
     public function isVirtual($path)
@@ -330,7 +330,7 @@ class Path
     /**
      * Get path prefix.
      *
-     * @param $path
+     * @param string $path (example: "C:\server\test.dev\file.txt")
      * @return null
      */
     public function prefix($path)
@@ -342,7 +342,7 @@ class Path
     /**
      * Get relative path.
      *
-     * @param $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
+     * @param string $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
      * @param bool $exitsFile
      * @return string
      * @throws Exception
@@ -366,8 +366,8 @@ class Path
     /**
      * Find actual file or directory in the paths.
      *
-     * @param $paths
-     * @param $file
+     * @param string|array $paths
+     * @param string $file
      * @return null|string
      */
     protected function _find($paths, $file)
@@ -388,9 +388,9 @@ class Path
     /**
      * Add path to hold.
      *
-     * @param $path
-     * @param $package
-     * @param $mode
+     * @param string $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
+     * @param string $package
+     * @param string $mode
      * @return void
      */
     protected function _add($path, $package, $mode)
@@ -410,7 +410,7 @@ class Path
     /**
      * Check added path.
      *
-     * @param $path
+     * @param $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
      * @param string $dirSep
      * @return null|string
      */
@@ -434,9 +434,9 @@ class Path
     /**
      * Reset added paths.
      *
-     * @param $paths
-     * @param $package
-     * @param $mode
+     * @param string $paths (example: "default:file.txt" or "C:/Server/public_html/index.php")
+     * @param string $package
+     * @param bool $mode
      */
     protected function _reset($paths, $package, $mode)
     {
@@ -449,8 +449,8 @@ class Path
     /**
      * Checking the possibility of removing the path.
      *
-     * @param $package
-     * @param $keys
+     * @param string $package
+     * @param array $keys
      * @return bool
      */
     protected function _isDeleted($package, $keys)
