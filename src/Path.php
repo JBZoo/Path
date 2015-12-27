@@ -151,10 +151,7 @@ class Path
      */
     public function getRoot()
     {
-        if (!isset($this->_root)) {
-            throw new Exception(sprintf('The root directory has not been set'));
-        }
-
+        $this->_checkRoot();
         return $this->_root;
     }
 
@@ -174,11 +171,7 @@ class Path
             throw new Exception('The minimum number of characters is 3');
         }
 
-        if ($mode === self::RESET) {
-            $this->_paths[$package] = $paths;
-            return;
-        }
-
+        $this->_reset($paths, $package, $mode);
         foreach ($paths as $path) {
             if (!isset($this->_paths[$package])) {
                 $this->_paths[$package] = array();
@@ -229,7 +222,7 @@ class Path
         list($package) = $this->parse($source);
 
         $return = false;
-        if (isset($this->_paths[$package]) && is_array($this->_paths[$package]) && !empty($keys)) {
+        if ($this->_isDeleted($package, $keys)) {
             foreach ($keys as $key) {
                 $key = (int) $key;
                 if (array_key_exists($key, $this->_paths[$package])) {
@@ -356,18 +349,12 @@ class Path
      */
     public function relative($path, $exitsFile = false)
     {
-        if ($this->_root == null) {
-            throw new Exception(sprintf('Please, set the root directory'));
-        }
+        $this->_checkRoot();
 
         $root    = preg_quote(FS::clean($this->_root, '/'), '/');
-        $subject = FS::clean($path, '/');
+        $path    = $this->_checkAddPath($path, '/');
+        $subject = $path;
         $pattern = '/^' . $root . '/i';
-
-        if ($this->isVirtual($path)) {
-            $path    = $this->get($path);
-            $subject = $path;
-        }
 
         if ($exitsFile && !$this->isVirtual($path) && !file_exists($path)) {
             $subject = null;
@@ -408,10 +395,7 @@ class Path
      */
     protected function _add($path, $package, $mode)
     {
-        if ($this->isVirtual($path)) {
-            $path = $this->get($path);
-        }
-
+        $path = $this->_checkAddPath($path);
         if (!empty($path)) {
             if ($mode == self::PREPEND) {
                 array_unshift($this->_paths[$package], $path);
@@ -421,5 +405,60 @@ class Path
                 array_push($this->_paths[$package], $path);
             }
         }
+    }
+
+    /**
+     * Check added path.
+     *
+     * @param $path
+     * @param string $dirSep
+     * @return null|string
+     */
+    protected function _checkAddPath($path, $dirSep = DIRECTORY_SEPARATOR)
+    {
+        return ($this->isVirtual($path)) ? $this->get($path) : FS::clean($path, $dirSep);
+    }
+
+    /**
+     * Check root directory.
+     *
+     * @throws Exception
+     */
+    protected function _checkRoot()
+    {
+        if ($this->_root == null) {
+            throw new Exception(sprintf('Please, set the root directory'));
+        }
+    }
+
+    /**
+     * Reset added paths.
+     *
+     * @param $paths
+     * @param $package
+     * @param $mode
+     */
+    protected function _reset($paths, $package, $mode)
+    {
+        if ($mode === self::RESET) {
+            $this->_paths[$package] = $paths;
+            return;
+        }
+    }
+
+    /**
+     * Checking the possibility of removing the path.
+     *
+     * @param $package
+     * @param $keys
+     * @return bool
+     */
+    protected function _isDeleted($package, $keys)
+    {
+        if (isset($this->_paths[$package]) && is_array($this->_paths[$package]) && !empty($keys)) {
+            return true;
+        }
+
+        return false;
     }
 }
