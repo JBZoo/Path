@@ -349,12 +349,18 @@ class Path
      */
     protected function _add($path, $package, $mode)
     {
-        if ($mode == self::PREPEND) {
-            array_unshift($this->_paths[$package], $path);
+        if ($this->isVirtual($path)) {
+            $path = $this->get($path);
         }
 
-        if ($mode == self::APPEND) {
-            array_push($this->_paths[$package], $path);
+        if (!empty($path)) {
+            if ($mode == self::PREPEND) {
+                array_unshift($this->_paths[$package], $path);
+            }
+
+            if ($mode == self::APPEND) {
+                array_push($this->_paths[$package], $path);
+            }
         }
     }
 }

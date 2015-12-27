@@ -82,6 +82,35 @@ class PathTest extends PHPUnit
         isSame($expected, $package);
     }
 
+    public function testRegisterVirtual()
+    {
+        $path = new Path();
+        $fs   = new Filesystem();
+
+        $path->register('default:folder');
+        isSame(array(), $path->getPaths('default:'));
+
+        $path->register('alias:folder');
+        isSame(array(), $path->getPaths('alias:'));
+
+        $path->register($this->_root);
+        isSame(array($this->_root), $path->getPaths('default:'));
+
+        $path->register('default:virtual-folder');
+        isSame(array($this->_root), $path->getPaths('default:'));
+
+        $newFolder = $this->_root . DS . 'virtual-folder';
+        $fs->mkdir($newFolder);
+
+        $path->register('default:virtual-folder');
+        isSame(array(
+            FS::clean($this->_root . DS . 'virtual-folder', '/'),
+            $this->_root,
+        ), $path->getPaths('default:'));
+
+        $fs->remove($newFolder);
+    }
+
     public function testRegisterReset()
     {
         $path    = new Path();
