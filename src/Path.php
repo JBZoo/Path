@@ -143,12 +143,9 @@ class Path
     {
         $details = explode('?', $source);
         $path    = $details[0];
+        $path    = ($this->isVirtual($path)) ? $this->get($path) : FS::clean($path, '/');
+        $path    = $this->relative($path, true);
 
-        if ($this->isVirtual($path)) {
-            $path = $this->get($path);
-        }
-
-        $path = $this->relative($path, true);
         if (!empty($path)) {
             if (isset($details[1])) {
                 $path .= '?' . $details[1];
