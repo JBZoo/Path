@@ -160,7 +160,7 @@ class Path
      *
      * @param string|array $paths
      * @param string $package
-     * @param string $mode
+     * @param string|bool $mode
      * @throws Exception
      */
     public function register($paths, $package = Path::DEFAULT_PACKAGE, $mode = Path::PREPEND)
@@ -434,7 +434,7 @@ class Path
     /**
      * Reset added paths.
      *
-     * @param string $paths (example: "default:file.txt" or "C:/Server/public_html/index.php")
+     * @param string|array $paths (example: "default:file.txt" or "C:/Server/public_html/index.php")
      * @param string $package
      * @param bool $mode
      */
