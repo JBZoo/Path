@@ -41,9 +41,93 @@ class PathTest extends PHPUnit
         );
     }
 
+    /**
+     * @expectedException \JBZoo\Path\Exception
+     */
+    public function testInvalidInstance()
+    {
+        Path::getInstance(false);
+        Path::getInstance(true);
+        Path::getInstance('');
+    }
+
+    public function testInstance()
+    {
+        $fs      = new Filesystem();
+        $default = Path::getInstance();
+        $import  = Path::getInstance('import');
+        $export  = Path::getInstance('export');
+
+        $defaultDir = $this->_root . DS . 'simple-folder';
+        $importDir  = $this->_root . DS . 'import';
+        $exportDir  = $this->_root . DS . 'export';
+
+        $fs->mkdir($defaultDir);
+        $fs->mkdir($importDir);
+        $fs->mkdir($exportDir);
+
+        $default->register($defaultDir);
+        $import->register($importDir);
+        $export->register(array(
+            $exportDir,
+            $importDir,
+        ));
+
+        isSame(array($defaultDir), $default->getPaths('default:'));
+        isSame(array($importDir), $import->getPaths('default:'));
+        isSame(array($importDir, $exportDir), $export->getPaths('default:'));
+        isSame(array('default', 'import', 'export'), $default->getInstanceKeys());
+
+        $_SERVER['HTTP_HOST']   = 'test.dev';
+        $_SERVER['SERVER_PORT'] = 80;
+        $_SERVER['REQUEST_URI'] = '/';
+
+        $fs->dumpFile($defaultDir . DS . 'file.txt', '');
+        $fs->dumpFile($importDir . DS . 'simple.txt', '');
+        $fs->dumpFile($exportDir . DS . 'my-file.txt', '');
+
+        $default->setRoot($this->_root);
+        $import->setRoot($this->_root);
+        $export->setRoot($this->_root);
+
+        $current = Url::current();
+        isSame($current . 'simple-folder/file.txt', $default->url('default:file.txt'));
+        isSame($current . 'simple-folder/file.txt', $default->url('default:\file.txt'));
+        isSame($current . 'simple-folder/file.txt', $default->url('default:/file.txt'));
+        isSame($current . 'simple-folder/file.txt', $default->url('default:////file.txt'));
+        isSame($current . 'simple-folder/file.txt', $default->url('default:\\\\file.txt'));
+        isSame($current . 'simple-folder/file.txt', $default->url($defaultDir . DS . 'file.txt'));
+        isSame($current . 'simple-folder/file.txt', $default->url($defaultDir . '///file.txt'));
+        isSame($current . 'simple-folder/file.txt', $default->url($defaultDir . '\\\\file.txt'));
+
+        isSame($current . 'import/simple.txt', $import->url('default:simple.txt'));
+        isSame($current . 'import/simple.txt', $import->url('default:\simple.txt'));
+        isSame($current . 'import/simple.txt', $import->url('default:/simple.txt'));
+        isSame($current . 'import/simple.txt', $import->url('default:////simple.txt'));
+        isSame($current . 'import/simple.txt', $import->url('default:\\\\simple.txt'));
+        isSame($current . 'import/simple.txt', $import->url($importDir . DS . 'simple.txt'));
+        isSame($current . 'import/simple.txt', $import->url($importDir . '///simple.txt'));
+        isSame($current . 'import/simple.txt', $import->url($importDir . '\\\\simple.txt'));
+
+        isSame($current . 'export/my-file.txt', $export->url('default:my-file.txt'));
+        isSame($current . 'export/my-file.txt', $export->url('default:\my-file.txt'));
+        isSame($current . 'export/my-file.txt', $export->url('default:/my-file.txt'));
+        isSame($current . 'import/simple.txt', $export->url('default:////simple.txt'));
+        isSame($current . 'import/simple.txt', $export->url('default:\\\\simple.txt'));
+        isSame($current . 'export/my-file.txt', $export->url($exportDir . DS . 'my-file.txt'));
+        isSame($current . 'export/my-file.txt', $export->url($exportDir . '///my-file.txt'));
+        isSame($current . 'export/my-file.txt', $export->url($exportDir . '\\\\my-file.txt'));
+
+        $fs->remove(array($defaultDir, $importDir, $exportDir));
+
+        Path::removeInstance();
+        Path::removeInstance('import');
+        Path::removeInstance('export');
+    }
+
     public function testRegisterAppend()
     {
-        $path = new Path();
+        $path = Path::getInstance();
 
         $path->register($this->_paths);
         $path->register($this->_paths, 'test');
@@ -58,11 +142,12 @@ class PathTest extends PHPUnit
 
         isSame($expected, $testPaths);
         isSame($expected, $defaultPaths);
+        Path::removeInstance();
     }
 
     public function testRegisterPrepend()
     {
-        $path  = new Path();
+        $path  = Path::getInstance();
         $paths = $this->_paths;
 
         $appendPath = $this->_root . DS . 'append';
@@ -80,11 +165,12 @@ class PathTest extends PHPUnit
 
         $package = $path->getPaths('default:');
         isSame($expected, $package);
+        Path::removeInstance();
     }
 
     public function testRegisterVirtual()
     {
-        $path = new Path();
+        $path = Path::getInstance();
         $fs   = new Filesystem();
 
         $path->register('default:folder');
@@ -109,11 +195,12 @@ class PathTest extends PHPUnit
         ), $path->getPaths('default:'));
 
         $fs->remove($newFolder);
+        Path::removeInstance();
     }
 
     public function testRegisterReset()
     {
-        $path    = new Path();
+        $path    = Path::getInstance();
         $newPath = array(
             $this->_root . DS . 'new-folder'
         );
@@ -122,6 +209,7 @@ class PathTest extends PHPUnit
         $path->register($newPath, Path::DEFAULT_PACKAGE, Path::RESET);
 
         isSame($newPath, $path->getPaths(Path::DEFAULT_PACKAGE));
+        Path::removeInstance();
     }
 
     /**
@@ -129,58 +217,64 @@ class PathTest extends PHPUnit
      */
     public function testRegisterMinLength()
     {
-        $path    = new Path();
+        $path    = Path::getInstance();
         $path->register($this->_root, '');
         $path->register($this->_root, 'a');
         $path->register($this->_root, 'ab');
+        Path::removeInstance();
     }
 
     public function testEmptyPaths()
     {
-        $path = new Path();
+        $path = Path::getInstance();
         $path->register($this->_paths);
 
         $packagePaths = $path->getPaths('alias:');
         isSame(array(), $packagePaths);
+        Path::removeInstance();
     }
 
     public function testIsVirtual()
     {
-        $path = new Path();
+        $path = Path::getInstance();
         isTrue($path->isVirtual('alias:'));
         isTrue($path->isVirtual('alias:styles.css'));
         isTrue($path->isVirtual('alias:folder/styles.css'));
+        Path::removeInstance();
     }
 
     public function testIsNotVirtual()
     {
-        $path = new Path();
+        $path = Path::getInstance();
         isFalse($path->isVirtual(__DIR__));
         isFalse($path->isVirtual(dirname(__DIR__)));
         isFalse($path->isVirtual('/folder/file.txt'));
         isFalse($path->isVirtual('alias:/styles.css'));
         isFalse($path->isVirtual('alias:\styles.css'));
+        Path::removeInstance();
     }
 
     public function testHasPrefix()
     {
-        $path = new Path();
+        $path = Path::getInstance();
         $this->assertInternalType('string', $path->prefix(__DIR__));
         $this->assertInternalType('string', $path->prefix(dirname(__DIR__)));
         $this->assertInternalType('string', $path->prefix('P:\\\\Folder\\'));
+        Path::removeInstance();
     }
 
     public function testNoPrefix()
     {
-        $path = new Path();
+        $path = Path::getInstance();
         isNull($path->prefix('folder/file.txt'));
         isNull($path->prefix('./folder/file.txt'));
         isNull($path->prefix('default:folder/file.txt'));
+        Path::removeInstance();
     }
 
     public function testParseVirtual()
     {
-        $path = new Path();
+        $path = Path::getInstance();
 
         $path->register($this->_paths);
         $parse1 = $path->parse('default:text.txt');
@@ -203,22 +297,24 @@ class PathTest extends PHPUnit
         isSame($expected1, $parse1);
         isSame($expected2, $parse2);
         isSame($expected3, $parse3);
+        Path::removeInstance();
     }
 
     public function testNormalize()
     {
-        $path = new Path();
+        $path = Path::getInstance();
 
         isSame(FS::clean(__DIR__, '/'), $path->normalize(__DIR__));
         isSame('test/path/folder', $path->normalize('../test/path/folder/'));
         isSame('test/path/folder', $path->normalize('../../test/path/folder/'));
         isSame('test/path/folder', $path->normalize('..\..\test\path\folder\\'));
         isSame('test/path/folder', $path->normalize('..\../test///path/\/\folder/\\'));
+        Path::removeInstance();
     }
 
     public function testPathSuccess()
     {
-        $path = new Path();
+        $path = Path::getInstance();
         $fs   = new Filesystem();
 
         $paths = array(
@@ -281,11 +377,12 @@ class PathTest extends PHPUnit
         );
 
         $fs->remove($dir1);
+        Path::removeInstance();
     }
 
     public function testCheckRemovePaths()
     {
-        $path = new Path();
+        $path = Path::getInstance();
 
         $path->register(array(
             $this->_root,
@@ -320,11 +417,12 @@ class PathTest extends PHPUnit
 
         $path->remove('default:', array(4, '6'));
         isEmpty($path->getPaths('default'));
+        Path::removeInstance();
     }
 
     public function testRemove()
     {
-        $path = new Path();
+        $path = Path::getInstance();
 
         $path->register(array(
             $this->_root,
@@ -342,6 +440,7 @@ class PathTest extends PHPUnit
 
         isFalse($path->remove('alias:', array(2)));
         isFalse($path->remove('alias:', array('5', 10, '123')));
+        Path::removeInstance();
     }
 
     /**
@@ -349,8 +448,9 @@ class PathTest extends PHPUnit
      */
     public function testSetRootFailed()
     {
-        $path = new Path();
+        $path = Path::getInstance();
         $path->setRoot(__DIR__ . DS . mt_rand());
+        Path::removeInstance();
     }
 
     /**
@@ -358,13 +458,14 @@ class PathTest extends PHPUnit
      */
     public function testGetRootFailed()
     {
-        $path = new Path();
+        $path = Path::getInstance();
         $path->getRoot();
+        Path::removeInstance();
     }
 
     public function testSetRoot()
     {
-        $path = new Path();
+        $path = Path::getInstance();
         $fs   = new Filesystem();
         $dir  = __DIR__ . DS . mt_rand();
 
@@ -375,11 +476,12 @@ class PathTest extends PHPUnit
         $path->setRoot($dir);
         isSame(__DIR__, $path->getRoot());
         $fs->remove($dir);
+        Path::removeInstance();
     }
 
     public function testRelative()
     {
-        $path = new Path();
+        $path = Path::getInstance();
         $fs   = new Filesystem();
         $path->setRoot(__DIR__);
 
@@ -420,6 +522,7 @@ class PathTest extends PHPUnit
         isSame('folder/hello/file3.txt', $path->relative('default:hello\\\\\\file3.txt/'));
 
         $fs->remove(array($dir1, $dir2, $dir3));
+        Path::removeInstance();
     }
 
     /**
@@ -427,15 +530,16 @@ class PathTest extends PHPUnit
      */
     public function testRelativeFail()
     {
-        $path = new Path();
+        $path = Path::getInstance();
         $path->register($this->_paths);
         $path->relative('default:file.txt');
         $path->relative(__DIR__);
+        Path::removeInstance();
     }
 
     public function testUrl()
     {
-        $path = new Path();
+        $path = Path::getInstance();
         $fs   = new Filesystem();
 
         $_SERVER['HTTP_HOST']   = 'test.dev';
@@ -491,5 +595,7 @@ class PathTest extends PHPUnit
             $this->_root . DS . 'my-folder2',
             $this->_root . DS . 'file2.txt',
         ));
+
+        Path::removeInstance();
     }
 }

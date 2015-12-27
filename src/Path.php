@@ -68,6 +68,57 @@ class Path
     protected $_root;
 
     /**
+     * Holds object instance.
+     *
+     * @var array
+     */
+    protected static $_objects = array();
+
+    /**
+     * Get path instance.
+     *
+     * @param string $key
+     * @return \JBZoo\Path\Path
+     */
+    public static function getInstance($key = 'default')
+    {
+        if (!isset(self::$_objects[$key])) {
+            self::$_objects[$key] = new self($key);
+        }
+
+        return self::$_objects[$key];
+    }
+
+    /**
+     * Remove instance.
+     *
+     * @param string $key
+     */
+    public static function removeInstance($key = 'default')
+    {
+        if (array_key_exists($key, self::$_objects)) {
+            unset(self::$_objects[$key]);
+        }
+    }
+
+    /**
+     * Path constructor.
+     *
+     * @param string $key
+     * @throws Exception
+     */
+    protected function __construct($key = 'default')
+    {
+        if (empty($key)) {
+            throw new Exception('Invalid object key');
+        }
+
+        if (!isset(self::$_objects[$key])) {
+            static::$_objects[$key] = $key;
+        }
+    }
+
+    /**
      * Setup root directory.
      *
      * @param $dir
@@ -82,6 +133,16 @@ class Path
         if (!isset($this->_root)) {
             $this->_root = $dir;
         }
+    }
+
+    /**
+     * Get instance keys.
+     *
+     * @return array
+     */
+    public function getInstanceKeys()
+    {
+        return array_keys(self::$_objects);
     }
 
     /**
