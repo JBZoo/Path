@@ -102,6 +102,7 @@ class Path
             throw new Exception(sprintf('The minimum number of characters is %s', Path::MIN_ALIAS_LENGTH));
         }
 
+        $alias = preg_replace('/[^A-Z0-9_\.-]/i', '', $alias);
         if ($this->_reset($paths, $alias, $mode)) {
             return;
         }

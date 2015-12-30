@@ -69,12 +69,12 @@ class PathTest extends PHPUnit
         $fs->mkdir($importDir);
         $fs->mkdir($exportDir);
 
-        $default->add($defaultDir);
-        $import->add($importDir);
+        $default->add($defaultDir, 'defau/lt');
+        $import->add($importDir, 'defau\\l//t');
         $export->add(array(
             $exportDir,
             $importDir,
-        ));
+        ), '()de~~fau+!#$lt');
 
         isSame($this->_clearPaths($defaultDir), $default->getPaths('default:'));
         isSame($this->_clearPaths($importDir), $import->getPaths('default:'));
