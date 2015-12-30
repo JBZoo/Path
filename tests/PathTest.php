@@ -33,7 +33,7 @@ class PathTest extends PHPUnit
 
     public function setup()
     {
-        $this->_root = __DIR__;
+        $this->_root = FS::clean(__DIR__, '/');
 
         $this->_paths = array(
             $this->_root,
@@ -445,14 +445,14 @@ class PathTest extends PHPUnit
     {
         $path = Path::getInstance(__METHOD__);
         $fs   = new Filesystem();
-        $dir  = __DIR__ . DS . mt_rand();
+        $dir  = $this->_root . DS . mt_rand();
 
-        $path->setRoot(__DIR__);
-        isSame(__DIR__, $path->getRoot());
+        $path->setRoot($this->_root);
+        isSame($this->_root, $path->getRoot());
 
         $fs->mkdir($dir);
         $path->setRoot($dir);
-        isSame(__DIR__, $path->getRoot());
+        isSame($this->_root, $path->getRoot());
         $fs->remove($dir);
     }
 
@@ -584,20 +584,10 @@ class PathTest extends PHPUnit
 
         list($path1, $path2, $path3) = $paths;
 
-        $path2Array = explode('/', rtrim(FS::clean($path2, '/'), '/'));
-        array_pop($path2Array);
-        array_pop($path2Array);
-
-        $path3Array = explode('/', rtrim(FS::clean($path3, '/'), '/'));
-        array_pop($path3Array);
-        array_pop($path3Array);
-        array_pop($path3Array);
-        array_pop($path3Array);
-
         $expected = array(
-            implode('/', $path3Array),
-            implode('/', $path2Array),
-            FS::clean($this->_root, '/'),
+            realpath(FS::clean($path3)),
+            realpath(FS::clean($path2)),
+            FS::clean($path1, '/'),
         );
 
         isSame($expected, $path->getPaths('default:'));

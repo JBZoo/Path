@@ -273,7 +273,7 @@ class Path
         }
 
         if (!isset($this->_root)) {
-            $this->_root = $dir;
+            $this->_root = FS::clean($dir, '/');
         }
     }
 
@@ -313,7 +313,7 @@ class Path
     {
         $this->_checkRoot();
 
-        $root    = preg_quote(FS::clean($this->_root, '/'), '/');
+        $root    = preg_quote($this->_root, '/');
         $path    = $this->_getAddPath($path, '/');
         $subject = $path;
         $pattern = '/^' . $root . '/i';
@@ -343,7 +343,7 @@ class Path
     /**
      * Add path to hold.
      *
-     * @param string $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
+     * @param string|array $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
      * @param string $alias
      * @param string|bool $mode
      * @return void
@@ -351,7 +351,7 @@ class Path
     protected function _add($path, $alias, $mode)
     {
         $path = $this->_getAddPath($path, '/');
-        if ($path) {
+        if ($path !== null) {
             if ($mode == self::MOD_PREPEND) {
                 array_unshift($this->_paths[$alias], $path);
             }
@@ -400,6 +400,7 @@ class Path
      * Get add path.
      *
      * @param $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
+     * @param        $path
      * @param string $dirSep
      * @return null|string
      */
@@ -410,22 +411,7 @@ class Path
         }
 
         if ($this->_hasCDBack($path)) {
-            $back    = 0;
-            $path    = FS::clean(rtrim($path, '/'), '/');
-            $details = explode('/', $path);
-
-            foreach ($details as $key => $detail) {
-                if ($detail == '..') {
-                    unset($details[$key]);
-                    $back++;
-                }
-            }
-
-            for ($i = 0; $i < $back; $i++) {
-                array_pop($details);
-            }
-
-            return implode('/', $details);
+            return (realpath($path)) ? realpath(FS::clean($path, '/')) : null;
         }
 
         return FS::clean($path, $dirSep);
@@ -487,7 +473,7 @@ class Path
     /**
      * Reset added paths.
      *
-     * @param string|array $paths (example: "default:file.txt" or "C:/Server/public_html/index.php")
+     * @param array $paths (example: "default:file.txt" or "C:/Server/public_html/index.php")
      * @param $alias
      * @param $mode
      * @return bool
