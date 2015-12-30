@@ -26,32 +26,46 @@ class Path
 {
 
     /**
-     * Default package name.
+     * Default alias name.
      *
      * @var string
      */
-    const DEFAULT_PACKAGE = 'default';
+    const DEFAULT_ALIAS = 'default';
 
     /**
-     * Prepend rule add paths.
+     * Minimal alias name length.
      *
      * @var string
      */
-    const PREPEND = 'prepend';
+    const MIN_ALIAS_LENGTH = 3;
 
     /**
-     * Append rule add paths.
+     * Mod prepend rule add paths.
      *
      * @var string
      */
-    const APPEND = 'append';
+    const MOD_PREPEND = 'prepend';
+
+    /**
+     * Mod append rule add paths.
+     *
+     * @var string
+     */
+    const MOD_APPEND = 'append';
 
     /**
      * Reset all registered paths.
      *
      * @var bool
      */
-    const RESET = true;
+    const MOD_RESET = true;
+
+    /**
+     * Holds object instance.
+     *
+     * @var array
+     */
+    protected static $_objects = array();
 
     /**
      * Holds paths list.
@@ -68,11 +82,78 @@ class Path
     protected $_root;
 
     /**
-     * Holds object instance.
+     * Register alias locations in file system.
      *
-     * @var array
+     * @param string|array $paths
+     *
+     * (Example:
+     * "default:file.txt" - if added at least one path and
+     * "C:\server\test.dev\fy-folder" or "C:\server\test.dev\fy-folder\..\..\")
+     *
+     * @param string $alias
+     * @param string|bool $mode
+     * @throws Exception
      */
-    protected static $_objects = array();
+    public function add($paths, $alias = Path::DEFAULT_ALIAS, $mode = Path::MOD_PREPEND)
+    {
+        $paths = (array) $paths;
+
+        if (strlen($alias) < Path::MIN_ALIAS_LENGTH) {
+            throw new Exception(sprintf('The minimum number of characters is %s', Path::MIN_ALIAS_LENGTH));
+        }
+
+        if ($this->_reset($paths, $alias, $mode)) {
+            return;
+        }
+
+        foreach ($paths as $path) {
+            if (!isset($this->_paths[$alias])) {
+                $this->_paths[$alias] = array();
+            }
+
+            $path = FS::clean($path, '/');
+            if (!in_array($path, $this->_paths[$alias], true)) {
+                $this->_add($path, $alias, $mode);
+            }
+        }
+    }
+
+    /**
+     * Normalize and clean path.
+     *
+     * @param string $path ("C:\server\test.dev\file.txt")
+     * @return string
+     */
+    public function clean($path)
+    {
+        $tokens = array();
+        $path   = FS::clean($path, '/');
+        $prefix = $this->prefix($path);
+        $path   = substr($path, strlen($prefix));
+        $parts  = array_filter(explode('/', $path), 'strlen');
+
+        foreach ($parts as $part) {
+            if ('..' === $part) {
+                array_pop($tokens);
+            } elseif ('.' !== $part) {
+                array_push($tokens, $part);
+            }
+        }
+
+        return $prefix . implode('/', $tokens);
+    }
+
+    /**
+     * Get absolute path to a file or a directory.
+     *
+     * @param $source (example: "default:file.txt")
+     * @return null|string
+     */
+    public function get($source)
+    {
+        list(, $paths, $path) = $this->_parse($source);
+        return $this->_find($paths, $path);
+    }
 
     /**
      * Get path instance.
@@ -90,30 +171,93 @@ class Path
     }
 
     /**
-     * Remove instance.
+     * Get instance keys.
      *
-     * @param string $key
+     * @return array
      */
-    public static function removeInstance($key = 'default')
+    public function getInstanceKeys()
     {
-        if (array_key_exists($key, self::$_objects)) {
-            unset(self::$_objects[$key]);
-        }
+        return array_keys(self::$_objects);
     }
 
     /**
-     * Path constructor.
+     * Get all absolute path to a file or a directory.
      *
-     * @param string $key
+     * @param $source (example: "default:file.txt")
+     * @return mixed
+     */
+    public function getPaths($source)
+    {
+        list(, $paths) = $this->_parse($source);
+        return $paths;
+    }
+
+    /**
+     * Get root directory.
+     *
+     * @return mixed
      * @throws Exception
      */
-    protected function __construct($key = 'default')
+    public function getRoot()
     {
-        if (empty($key)) {
-            throw new Exception('Invalid object key');
+        $this->_checkRoot();
+        return $this->_root;
+    }
+
+    /**
+     * Check virtual or real path.
+     *
+     * @param string $path (example: "default:file.txt" or "C:\server\test.dev\file.txt")
+     * @return bool
+     */
+    public function isVirtual($path)
+    {
+        $parts = explode(':', $path, 2);
+
+        list($alias) = $parts;
+        if ($this->prefix($path) !== null && !array_key_exists($alias, $this->_paths)) {
+            return false;
         }
 
-        static::$_objects[$key] = $key;
+        return (count($parts) == 2) ? true : false;
+    }
+
+    /**
+     * Get path prefix.
+     *
+     * @param string $path (example: "C:\server\test.dev\file.txt")
+     * @return null
+     */
+    public function prefix($path)
+    {
+        $path = FS::clean($path, '/');
+        return preg_match('|^(?P<prefix>([a-zA-Z]+:)?//?)|', $path, $matches) ? $matches['prefix'] : null;
+    }
+
+    /**
+     * Remove path from registered paths.
+     *
+     * @param $source (example: "default:file.txt")
+     * @param string|array $key
+     * @return bool
+     */
+    public function remove($source, $key)
+    {
+        $keys = (array) $key;
+        list($alias) = $this->_parse($source);
+
+        $return = false;
+        if ($this->_isDeleted($alias, $keys)) {
+            foreach ($keys as $key) {
+                $key = (int) $key;
+                if (array_key_exists($key, $this->_paths[$alias])) {
+                    unset($this->_paths[$alias][$key]);
+                    $return = true;
+                }
+            }
+        }
+
+        return $return;
     }
 
     /**
@@ -134,69 +278,17 @@ class Path
     }
 
     /**
-     * Get instance keys.
-     *
-     * @return array
-     */
-    public function getInstanceKeys()
-    {
-        return array_keys(self::$_objects);
-    }
-
-    /**
-     * Get root directory.
-     *
-     * @return mixed
-     * @throws Exception
-     */
-    public function getRoot()
-    {
-        $this->_checkRoot();
-        return $this->_root;
-    }
-
-    /**
-     * Register package locations in file system.
-     *
-     * @param string|array $paths
-     * @param string $package
-     * @param string|bool $mode
-     * @throws Exception
-     */
-    public function register($paths, $package = Path::DEFAULT_PACKAGE, $mode = Path::PREPEND)
-    {
-        $paths = (array) $paths;
-
-        if (strlen($package) < 3) {
-            throw new Exception('The minimum number of characters is 3');
-        }
-
-        $this->_reset($paths, $package, $mode);
-        foreach ($paths as $path) {
-            if (!isset($this->_paths[$package])) {
-                $this->_paths[$package] = array();
-            }
-
-            if (in_array($path, $this->_paths[$package])) {
-                break;
-            }
-
-            $this->_add($path, $package, $mode);
-        }
-    }
-
-    /**
-     * Get the absolute url to a file.
+     * Get uri to a file.
      *
      * @param string $source (example: "default:file.txt" or "C:\server\test.dev\file.txt")
      * @return null|string
      */
-    public function url($source)
+    public function uri($source)
     {
         $details = explode('?', $source);
         $path    = $details[0];
-        $path    = ($this->isVirtual($path)) ? $this->get($path) : FS::clean($path, '/');
-        $path    = $this->relative($path, true);
+        $path    = $this->_getAddPath($path, '/');
+        $path    = $this->urn($path, true);
 
         if (!empty($path)) {
             if (isset($details[1])) {
@@ -210,149 +302,19 @@ class Path
     }
 
     /**
-     * Remove path from registered paths.
-     *
-     * @param $source (example: "default:file.txt")
-     * @param string|array $key
-     * @return bool
-     */
-    public function remove($source, $key)
-    {
-        $keys = (array) $key;
-        list($package) = $this->parse($source);
-
-        $return = false;
-        if ($this->_isDeleted($package, $keys)) {
-            foreach ($keys as $key) {
-                $key = (int) $key;
-                if (array_key_exists($key, $this->_paths[$package])) {
-                    unset($this->_paths[$package][$key]);
-                    $return = true;
-                }
-            }
-        }
-
-        return $return;
-    }
-
-    /**
-     * Get absolute path to a file or a directory.
-     *
-     * @param $source (example: "default:file.txt")
-     * @return null|string
-     */
-    public function get($source)
-    {
-        list(, $paths, $path) = $this->parse($source);
-        return $this->_find($paths, $path);
-    }
-
-    /**
-     * Get all absolute path to a file or a directory.
-     *
-     * @param $source (example: "default:file.txt")
-     * @return mixed
-     */
-    public function getPaths($source)
-    {
-        list(, $paths) = $this->parse($source);
-        return $paths;
-    }
-
-    /**
-     * Normalize path.
-     *
-     * @param string $path ("C:\server\test.dev\file.txt")
-     * @return string
-     */
-    public function normalize($path)
-    {
-        $tokens = array();
-        $path   = FS::clean($path, '/');
-        $prefix = $this->prefix($path);
-        $path   = substr($path, strlen($prefix));
-        $parts  = array_filter(explode('/', $path), 'strlen');
-
-        foreach ($parts as $part) {
-            if ('..' === $part) {
-                array_pop($tokens);
-            } elseif ('.' !== $part) {
-                array_push($tokens, $part);
-            }
-        }
-
-        return $prefix . implode('/', $tokens);
-    }
-
-    /**
-     * Parse source string.
-     *
-     * @param string $source (example: "default:file.txt")
-     * @param string $package
-     * @return array
-     */
-    public function parse($source, $package = Path::DEFAULT_PACKAGE)
-    {
-        $path  = null;
-        $parts = explode(':', $source, 2);
-        $count = count($parts);
-
-        if ($count == 1) {
-            list($path) = $parts;
-        } elseif ($count == 2) {
-            list($package, $path) = $parts;
-        }
-
-        $path  = ltrim($path, "\\/");
-        $paths = isset($this->_paths[$package]) ? $this->_paths[$package] : array();
-
-        return array($package, $paths, $path);
-    }
-
-    /**
-     * Check virtual or real path.
-     *
-     * @param string $path (example: "default:file.txt" or "C:\server\test.dev\file.txt")
-     * @return bool
-     */
-    public function isVirtual($path)
-    {
-        $parts = explode(':', $path, 2);
-
-        list($package) = $parts;
-        if ($this->prefix($path) !== null && !array_key_exists($package, $this->_paths)) {
-            return false;
-        }
-
-        return (count($parts) == 2) ? true : false;
-    }
-
-    /**
-     * Get path prefix.
-     *
-     * @param string $path (example: "C:\server\test.dev\file.txt")
-     * @return null
-     */
-    public function prefix($path)
-    {
-        $path = FS::clean($path, '/');
-        return preg_match('|^(?P<prefix>([a-zA-Z]+:)?//?)|', $path, $matches) ? $matches['prefix'] : null;
-    }
-
-    /**
-     * Get relative path.
+     * Get urn path.
      *
      * @param string $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
      * @param bool $exitsFile
      * @return string
      * @throws Exception
      */
-    public function relative($path, $exitsFile = false)
+    public function urn($path, $exitsFile = false)
     {
         $this->_checkRoot();
 
         $root    = preg_quote(FS::clean($this->_root, '/'), '/');
-        $path    = $this->_checkAddPath($path, '/');
+        $path    = $this->_getAddPath($path, '/');
         $subject = $path;
         $pattern = '/^' . $root . '/i';
 
@@ -361,6 +323,55 @@ class Path
         }
 
         return ltrim(preg_replace($pattern, '', $subject), '/');
+    }
+
+    /**
+     * Path constructor.
+     *
+     * @param string $key
+     * @throws Exception
+     */
+    protected function __construct($key = 'default')
+    {
+        if (empty($key)) {
+            throw new Exception('Invalid object key');
+        }
+
+        static::$_objects[$key] = $key;
+    }
+
+    /**
+     * Add path to hold.
+     *
+     * @param string $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
+     * @param string $alias
+     * @param string|bool $mode
+     * @return void
+     */
+    protected function _add($path, $alias, $mode)
+    {
+        $path = $this->_getAddPath($path, '/');
+        if ($path) {
+            if ($mode == self::MOD_PREPEND) {
+                array_unshift($this->_paths[$alias], $path);
+            }
+
+            if ($mode == self::MOD_APPEND) {
+                array_push($this->_paths[$alias], $path);
+            }
+        }
+    }
+
+    /**
+     * Check root directory.
+     *
+     * @throws Exception
+     */
+    protected function _checkRoot()
+    {
+        if ($this->_root === null) {
+            throw new Exception(sprintf('Please, set the root directory'));
+        }
     }
 
     /**
@@ -376,7 +387,7 @@ class Path
         $file  = ltrim($file, "\\/");
 
         foreach ($paths as $path) {
-            $fullPath = $this->normalize($path . '/' . $file);
+            $fullPath = $this->clean($path . '/' . $file);
             if (file_exists($fullPath)) {
                 return $fullPath;
             }
@@ -386,76 +397,109 @@ class Path
     }
 
     /**
-     * Add path to hold.
-     *
-     * @param string $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
-     * @param string $package
-     * @param string|bool $mode
-     * @return void
-     */
-    protected function _add($path, $package, $mode)
-    {
-        $path = $this->_checkAddPath($path);
-        if (!empty($path)) {
-            if ($mode == self::PREPEND) {
-                array_unshift($this->_paths[$package], $path);
-            }
-
-            if ($mode == self::APPEND) {
-                array_push($this->_paths[$package], $path);
-            }
-        }
-    }
-
-    /**
-     * Check added path.
+     * Get add path.
      *
      * @param $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
      * @param string $dirSep
      * @return null|string
      */
-    protected function _checkAddPath($path, $dirSep = DIRECTORY_SEPARATOR)
+    protected function _getAddPath($path, $dirSep = DIRECTORY_SEPARATOR)
     {
-        return ($this->isVirtual($path)) ? $this->get($path) : FS::clean($path, $dirSep);
+        if ($this->isVirtual($path)) {
+            return $this->get($path);
+        }
+
+        if ($this->_hasCDBack($path)) {
+            $back    = 0;
+            $path    = FS::clean(rtrim($path, '/'), '/');
+            $details = explode('/', $path);
+
+            foreach ($details as $key => $detail) {
+                if ($detail == '..') {
+                    unset($details[$key]);
+                    $back++;
+                }
+            }
+
+            for ($i = 0; $i < $back; $i++) {
+                array_pop($details);
+            }
+
+            return implode('/', $details);
+        }
+
+        return FS::clean($path, $dirSep);
     }
 
     /**
-     * Check root directory.
+     * Check has back current.
      *
-     * @throws Exception
+     * @param $path
+     * @return int
      */
-    protected function _checkRoot()
+    protected function _hasCDBack($path)
     {
-        if ($this->_root == null) {
-            throw new Exception(sprintf('Please, set the root directory'));
+        $path = FS::clean($path, '/');
+        return preg_match('(/\.\.$|/\.\./$)', $path);
+    }
+
+    /**
+     * Checking the possibility of removing the path.
+     *
+     * @param string $alias
+     * @param array $keys
+     * @return bool
+     */
+    protected function _isDeleted($alias, $keys)
+    {
+        if (isset($this->_paths[$alias]) && is_array($this->_paths[$alias]) && !empty($keys)) {
+            return true;
         }
+
+        return false;
+    }
+
+    /**
+     * Parse source string.
+     *
+     * @param string $source (example: "default:file.txt")
+     * @param string $alias
+     * @return array
+     */
+    protected function _parse($source, $alias = Path::DEFAULT_ALIAS)
+    {
+        $path  = null;
+        $parts = explode(':', $source, 2);
+        $count = count($parts);
+
+        if ($count == 1) {
+            list($path) = $parts;
+        } elseif ($count == 2) {
+            list($alias, $path) = $parts;
+        }
+
+        $path  = ltrim($path, "\\/");
+        $paths = isset($this->_paths[$alias]) ? $this->_paths[$alias] : array();
+
+        return array($alias, $paths, $path);
     }
 
     /**
      * Reset added paths.
      *
      * @param string|array $paths (example: "default:file.txt" or "C:/Server/public_html/index.php")
-     * @param string $package
-     * @param string|bool $mode
-     */
-    protected function _reset($paths, $package, $mode)
-    {
-        if ($mode === self::RESET) {
-            $this->_paths[$package] = $paths;
-            return;
-        }
-    }
-
-    /**
-     * Checking the possibility of removing the path.
-     *
-     * @param string $package
-     * @param array $keys
+     * @param $alias
+     * @param $mode
      * @return bool
      */
-    protected function _isDeleted($package, $keys)
+    protected function _reset($paths, $alias, $mode)
     {
-        if (isset($this->_paths[$package]) && is_array($this->_paths[$package]) && !empty($keys)) {
+        if ($mode === self::MOD_RESET) {
+            $this->_paths[$alias] = array();
+            foreach ($paths as $path) {
+                $this->_paths[$alias][] = FS::clean($path, '/');
+            }
+
             return true;
         }
 
