@@ -593,6 +593,37 @@ class PathTest extends PHPUnit
         isSame($expected, $path->getPaths('default:'));
     }
 
+    public function testBenchmark()
+    {
+        runBench(array(
+            'JBZoo\Path'   => function () {
+                $Path    = Path::getInstance('JBZooPath');
+                $dirName = mt_rand();
+                $path    = __DIR__ . DS . $dirName;
+                $fs      = new Filesystem();
+
+                $fs->mkdir($path);
+                $Path->add(__DIR__ . DS . $dirName);
+                $result = $Path->get('default:');
+                $fs->remove($path);
+
+                return $result;
+            },
+            'RealPath'  => function () {
+                $dirName = mt_rand();
+                $path    = __DIR__ . DS . $dirName;
+                $fs      = new Filesystem();
+
+                $fs->mkdir($path);
+                $result = realpath($path);
+                $fs->remove($path);
+
+                return $result;
+            },
+        ), array('count' => 500, 'name' => 'Path lib'));
+
+    }
+
     protected function _clearPaths($paths)
     {
         $return = array();
