@@ -70,14 +70,14 @@ class PathTest extends PHPUnit
         $fs->mkdir($exportDir);
 
         $default->add($defaultDir, 'defau/lt');
-        $import->add($importDir, 'defau\\l//t');
+        $import->add($importDir, 'Defau\\l//t');
         $export->add(array(
             $exportDir,
             $importDir,
         ), '()de~~fau+!#$lt');
 
         isSame($this->_clearPaths($defaultDir), $default->getPaths('default:'));
-        isSame($this->_clearPaths($importDir), $import->getPaths('default:'));
+        isSame($this->_clearPaths($importDir), $import->getPaths('Default:'));
 
         isSame($this->_clearPaths(array($importDir, $exportDir)), $export->getPaths('default:'));
 
@@ -105,11 +105,11 @@ class PathTest extends PHPUnit
         isSame($current . $name1 . '/file.txt', $default->uri($defaultDir . '///file.txt'));
         isSame($current . $name1 . '/file.txt', $default->uri($defaultDir . '\\\\file.txt'));
 
-        isSame($current . $name2 . '/simple.txt', $import->uri('default:simple.txt'));
-        isSame($current . $name2 . '/simple.txt', $import->uri('default:\simple.txt'));
-        isSame($current . $name2 . '/simple.txt', $import->uri('default:/simple.txt'));
-        isSame($current . $name2 . '/simple.txt', $import->uri('default:////simple.txt'));
-        isSame($current . $name2 . '/simple.txt', $import->uri('default:\\\\simple.txt'));
+        isSame($current . $name2 . '/simple.txt', $import->uri('Default:simple.txt'));
+        isSame($current . $name2 . '/simple.txt', $import->uri('Default:\simple.txt'));
+        isSame($current . $name2 . '/simple.txt', $import->uri('Default:/simple.txt'));
+        isSame($current . $name2 . '/simple.txt', $import->uri('Default:////simple.txt'));
+        isSame($current . $name2 . '/simple.txt', $import->uri('Default:\\\\simple.txt'));
         isSame($current . $name2 . '/simple.txt', $import->uri($importDir . DS . 'simple.txt'));
         isSame($current . $name2 . '/simple.txt', $import->uri($importDir . '///simple.txt'));
         isSame($current . $name2 . '/simple.txt', $import->uri($importDir . '\\\\simple.txt'));

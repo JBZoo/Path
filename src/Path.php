@@ -56,9 +56,9 @@ class Path
     /**
      * Reset all registered paths.
      *
-     * @var bool
+     * @var string
      */
-    const MOD_RESET = true;
+    const MOD_RESET = 'reset';
 
     /**
      * Holds object instance.
