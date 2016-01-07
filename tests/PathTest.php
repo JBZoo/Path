@@ -595,33 +595,39 @@ class PathTest extends PHPUnit
 
     public function testBenchmark()
     {
+        $fs = new Filesystem();
+
         runBench(array(
-            'JBZoo\Path'   => function () {
-                $Path    = Path::getInstance('JBZooPath');
+            'JBZoo\Path' => function () use ($fs) {
+
                 $dirName = mt_rand();
                 $path    = __DIR__ . DS . $dirName;
-                $fs      = new Filesystem();
-
                 $fs->mkdir($path);
+
+                // start
+                $Path = Path::getInstance('JBZooPath');
                 $Path->add(__DIR__ . DS . $dirName);
                 $result = $Path->get('default:');
+                // end
+
                 $fs->remove($path);
 
                 return $result;
             },
-            'RealPath'  => function () {
+            'RealPath'   => function () use ($fs) {
                 $dirName = mt_rand();
                 $path    = __DIR__ . DS . $dirName;
-                $fs      = new Filesystem();
-
                 $fs->mkdir($path);
+
+                // start
                 $result = realpath($path);
+                // end
+
                 $fs->remove($path);
 
                 return $result;
             },
         ), array('count' => 500, 'name' => 'Path lib'));
-
     }
 
     protected function _clearPaths($paths)
