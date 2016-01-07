@@ -389,7 +389,7 @@ class Path
 
         foreach ($paths as $path) {
             $fullPath = $this->clean($path . '/' . $file);
-            if (file_exists($fullPath)) {
+            if (file_exists($fullPath) || is_dir($fullPath)) {
                 return $fullPath;
             }
         }
