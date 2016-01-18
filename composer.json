@@ -1,23 +1,22 @@
 {
     "name"              : "jbzoo/path",
     "type"              : "library",
-    "description"       : "",
+    "description"       : "PHP virtual path library",
     "license"           : "MIT",
     "keywords"          : [
-        "skeleton",
-        "travis",
-        "phpunit",
-        "composer",
-        "github",
+        "url",
         "jbzoo",
-        "packagist"
+        "path",
+        "realpath",
+        "filesystem",
+        "virtual path"
     ],
     "minimum-stability" : "stable",
     "authors"           : [
         {
-            "name"  : "SmetDenis",
-            "email" : "denis@jbzoo.com",
-            "role"  : "lead"
+            "name"  : "Sergey Kalistratov",
+            "email" : "kalistratov.s.m@gmail.com",
+            "role"  : "developers"
         }
     ],
     "require"           : {
