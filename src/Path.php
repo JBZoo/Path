@@ -279,17 +279,17 @@ class Path
     }
 
     /**
-     * Get uri to a file.
+     * Get url to a file.
      *
      * @param string $source (example: "default:file.txt" or "C:\server\test.dev\file.txt")
      * @return null|string
      */
-    public function uri($source)
+    public function url($source)
     {
         $details = explode('?', $source);
         $path    = $details[0];
         $path    = $this->_getAddPath($path, '/');
-        $path    = $this->urn($path, true);
+        $path    = $this->_getUrlPath($path, true);
 
         if (!empty($path)) {
             if (isset($details[1])) {
@@ -300,30 +300,6 @@ class Path
         }
 
         return null;
-    }
-
-    /**
-     * Get urn path.
-     *
-     * @param string $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
-     * @param bool $exitsFile
-     * @return string
-     * @throws Exception
-     */
-    public function urn($path, $exitsFile = false)
-    {
-        $this->_checkRoot();
-
-        $root    = preg_quote($this->_root, '/');
-        $path    = $this->_getAddPath($path, '/');
-        $subject = $path;
-        $pattern = '/^' . $root . '/i';
-
-        if ($exitsFile && !$this->isVirtual($path) && !file_exists($path)) {
-            $subject = null;
-        }
-
-        return ltrim(preg_replace($pattern, '', $subject), '/');
     }
 
     /**
@@ -416,6 +392,30 @@ class Path
         }
 
         return FS::clean($path, $dirSep);
+    }
+
+    /**
+     * Get url path.
+     *
+     * @param string $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
+     * @param bool $exitsFile
+     * @return string
+     * @throws Exception
+     */
+    protected function _getUrlPath($path, $exitsFile = false)
+    {
+        $this->_checkRoot();
+
+        $root    = preg_quote($this->_root, '/');
+        $path    = $this->_getAddPath($path, '/');
+        $subject = $path;
+        $pattern = '/^' . $root . '/i';
+
+        if ($exitsFile && !$this->isVirtual($path) && !file_exists($path)) {
+            $subject = null;
+        }
+
+        return ltrim(preg_replace($pattern, '', $subject), '/');
     }
 
     /**

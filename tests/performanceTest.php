@@ -14,7 +14,7 @@
 
 namespace JBZoo\PHPUnit;
 
-use JBZoo\Path\Package;
+use JBZoo\Path\Path;
 
 /**
  * Class PerformanceTest
@@ -34,9 +34,9 @@ class PerformanceTest extends PHPUnit
 
         for ($i = 0; $i < $this->_max; $i++) {
             // Your code start
-            $obj = new Package();
-            $obj->doSomeStreetMagic();
-            unset($obj);
+            $path = Path::getInstance(__FUNCTION__);
+            $path->add(__DIR__ . DS . mt_rand());
+            unset($path);
             // Your code finish
         }
 
