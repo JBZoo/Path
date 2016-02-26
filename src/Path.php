@@ -282,9 +282,10 @@ class Path
      * Get url to a file.
      *
      * @param string $source (example: "default:file.txt" or "C:\server\test.dev\file.txt")
+     * @param bool|true $full
      * @return null|string
      */
-    public function url($source)
+    public function url($source, $full = true)
     {
         $details = explode('?', $source);
         $path    = $details[0];
@@ -296,7 +297,8 @@ class Path
                 $path .= '?' . $details[1];
             }
 
-            return Url::current() . $path;
+            $path = '/' . $path;
+            return ($full) ? Url::root() . $path : $path;
         }
 
         return null;

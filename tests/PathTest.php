@@ -85,7 +85,7 @@ class PathTest extends PHPUnit
 
         $_SERVER['HTTP_HOST']   = 'test.dev';
         $_SERVER['SERVER_PORT'] = 80;
-        $_SERVER['REQUEST_URI'] = '/';
+        $_SERVER['REQUEST_URI'] = '/page';
 
         $fs->dumpFile($defaultDir . DS . 'file.txt', '');
         $fs->dumpFile($importDir . DS . 'simple.txt', '');
@@ -95,7 +95,7 @@ class PathTest extends PHPUnit
         $import->setRoot($this->_root);
         $export->setRoot($this->_root);
 
-        $current = Url::current();
+        $current = Url::root() . '/';
         isSame($current . $name1 . '/file.txt', $default->url('default:file.txt'));
         isSame($current . $name1 . '/file.txt', $default->url('default:\file.txt'));
         isSame($current . $name1 . '/file.txt', $default->url('default:/file.txt'));
@@ -467,14 +467,34 @@ class PathTest extends PHPUnit
         $path->url(__DIR__);
     }
 
-    public function testUrl()
+    public function testShortUrl()
     {
         $path = Path::getInstance(__METHOD__);
         $fs   = new Filesystem();
 
         $_SERVER['HTTP_HOST']   = 'test.dev';
         $_SERVER['SERVER_PORT'] = 80;
-        $_SERVER['REQUEST_URI'] = '/';
+        $_SERVER['REQUEST_URI'] = '/build';
+
+        $dir = $this->_root . DS . 'short';
+        $fs->dumpFile($dir . DS . 'file.txt', '');
+
+        $path->setRoot($this->_root);
+        $path->add($dir);
+
+        isSame('/short/file.txt', $path->url('default:file.txt', false));
+
+        $fs->remove($dir);
+    }
+
+    public function testFullUrl()
+    {
+        $path = Path::getInstance(__METHOD__);
+        $fs   = new Filesystem();
+
+        $_SERVER['HTTP_HOST']   = 'test.dev';
+        $_SERVER['SERVER_PORT'] = 80;
+        $_SERVER['REQUEST_URI'] = '/custom';
 
         $paths = array(
             $this->_root . DS . 'my-folder',
@@ -494,7 +514,7 @@ class PathTest extends PHPUnit
         $path->setRoot($this->_root);
         $path->add($paths);
 
-        $current = Url::current();
+        $current = Url::root() . '/';
 
         $file1 = $current . 'my-folder2/dir/file1.txt';
         $file2 = $current . 'my-folder/file0.txt';
