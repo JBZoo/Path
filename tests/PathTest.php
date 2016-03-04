@@ -69,9 +69,9 @@ class PathTest extends PHPUnit
         $fs->mkdir($importDir);
         $fs->mkdir($exportDir);
 
-        $default->add($defaultDir, 'defau/lt');
-        $import->add($importDir, 'Defau\\l//t');
-        $export->add(array(
+        $default->set($defaultDir, 'defau/lt');
+        $import->set($importDir, 'Defau\\l//t');
+        $export->set(array(
             $exportDir,
             $importDir,
         ), '()de~~fau+!#$lt');
@@ -137,13 +137,13 @@ class PathTest extends PHPUnit
             $this->_root . DS . $name,
         );
 
-        $path->add($paths);
+        $path->set($paths);
 
         $paths2 = array(
             $this->_root,
             $this->_root . DS . $name
         );
-        $path->add($paths2, 'test');
+        $path->set($paths2, 'test');
 
         $expected = array(
             $this->_root . DS . $name,
@@ -170,8 +170,8 @@ class PathTest extends PHPUnit
 
         $appendPath = $this->_root . DS . $name2;
 
-        $path->add($paths);
-        $path->add($appendPath, Path::DEFAULT_ALIAS, Path::MOD_APPEND);
+        $path->set($paths);
+        $path->set($appendPath, Path::DEFAULT_ALIAS, Path::MOD_APPEND);
 
         array_push($paths, $appendPath);
 
@@ -190,22 +190,22 @@ class PathTest extends PHPUnit
         $path = Path::getInstance(__METHOD__);
         $fs   = new Filesystem();
 
-        $path->add('default:folder');
+        $path->set('default:folder');
         isSame(array(), $path->getPaths('default:'));
 
-        $path->add('alias:folder');
+        $path->set('alias:folder');
         isSame(array(), $path->getPaths('alias:'));
 
-        $path->add($this->_root);
+        $path->set($this->_root);
         isSame($this->_clearPaths($this->_root), $path->getPaths('default:'));
 
-        $path->add('default:virtual-folder');
+        $path->set('default:virtual-folder');
         isSame($this->_clearPaths($this->_root), $path->getPaths('default:'));
 
         $newFolder = $this->_root . DS . 'virtual-folder';
         $fs->mkdir($newFolder);
 
-        $path->add('default:virtual-folder');
+        $path->set('default:virtual-folder');
         isSame($this->_clearPaths(array(
             $this->_root . DS . 'virtual-folder',
             $this->_root,
@@ -223,8 +223,8 @@ class PathTest extends PHPUnit
             $this->_root . DS . $name
         );
 
-        $path->add($this->_root . DS . $name . DS . 'simple');
-        $path->add($newPath, Path::DEFAULT_ALIAS, Path::MOD_RESET);
+        $path->set($this->_root . DS . $name . DS . 'simple');
+        $path->set($newPath, Path::DEFAULT_ALIAS, Path::MOD_RESET);
 
         isSame($this->_clearPaths($newPath), $path->getPaths(Path::DEFAULT_ALIAS));
     }
@@ -235,15 +235,15 @@ class PathTest extends PHPUnit
     public function testRegisterMinLength()
     {
         $path    = Path::getInstance(__METHOD__);
-        $path->add($this->_root, '');
-        $path->add($this->_root, 'a');
-        $path->add($this->_root, 'ab');
+        $path->set($this->_root, '');
+        $path->set($this->_root, 'a');
+        $path->set($this->_root, 'ab');
     }
 
     public function testEmptyPaths()
     {
         $path = Path::getInstance(__METHOD__);
-        $path->add($this->_paths);
+        $path->set($this->_paths);
 
         $packagePaths = $path->getPaths('alias:');
         isSame(array(), $packagePaths);
@@ -334,7 +334,7 @@ class PathTest extends PHPUnit
         $fs->dumpFile($symOrigDir . DS . 'test-symlink.txt', '');
         $fs->symlink($symOrigDir, $symLink, true);
 
-        $path->add($paths);
+        $path->set($paths);
 
         isSame($path->clean($f1), $path->get('default:text.txt'));
         isSame($path->clean($f2), $path->get('default:file.pot'));
@@ -366,7 +366,7 @@ class PathTest extends PHPUnit
     {
         $path = Path::getInstance(__METHOD__);
 
-        $path->add(array(
+        $path->set(array(
             $this->_root,
             $this->_root . DS . 'folder',
             $this->_root . DS . 'folder-2',
@@ -405,7 +405,7 @@ class PathTest extends PHPUnit
     {
         $path = Path::getInstance(__METHOD__);
 
-        $path->add(array(
+        $path->set(array(
             $this->_root,
             $this->_root . DS . 'folder',
             $this->_root . DS . 'folder-2',
@@ -486,7 +486,7 @@ class PathTest extends PHPUnit
         $fs->dumpFile($dir2 . DS . 'file2.txt', '');
         $fs->dumpFile($dir3 . DS . 'hello' . DS . 'file3.txt', '');
 
-        $path->add($paths);
+        $path->set($paths);
 
         isSame('folder-1/file1.txt', $path->urn('default:file1.txt'));
         isSame('folder-1/file1.txt', $path->urn('default:file1.txt/'));
@@ -507,7 +507,7 @@ class PathTest extends PHPUnit
     public function testRelativeFail()
     {
         $path = Path::getInstance(__METHOD__);
-        $path->add($this->_paths);
+        $path->set($this->_paths);
         $path->urn('default:file.txt');
         $path->urn(__DIR__);
     }
@@ -537,7 +537,7 @@ class PathTest extends PHPUnit
         list($path1, $path2) = $paths;
 
         $path->setRoot($this->_root);
-        $path->add($paths);
+        $path->set($paths);
 
         $current = Url::current();
 
@@ -580,7 +580,7 @@ class PathTest extends PHPUnit
             $this->_root . '/..',
             $this->_root . '/../../',
         );
-        $path->add($paths);
+        $path->set($paths);
 
         list($path1, $path2, $path3) = $paths;
 
@@ -606,7 +606,7 @@ class PathTest extends PHPUnit
 
                 // start
                 $Path = Path::getInstance('JBZooPath');
-                $Path->add(__DIR__ . DS . $dirName);
+                $Path->set(__DIR__ . DS . $dirName);
                 $result = $Path->get('default:');
                 // end
 

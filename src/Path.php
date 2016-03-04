@@ -94,7 +94,7 @@ class Path
      * @param string|bool $mode
      * @throws Exception
      */
-    public function add($paths, $alias = Path::DEFAULT_ALIAS, $mode = Path::MOD_PREPEND)
+    public function set($paths, $alias = Path::DEFAULT_ALIAS, $mode = Path::MOD_PREPEND)
     {
         $paths = (array) $paths;
 
