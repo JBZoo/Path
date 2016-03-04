@@ -83,20 +83,19 @@ class Path
 
     /**
      * Register alias locations in file system.
+     * Example:
+     *      "default:file.txt" - if added at least one path and
+     *      "C:\server\test.dev\fy-folder" or "C:\server\test.dev\fy-folder\..\..\"
      *
+     * @param string       $alias
      * @param string|array $paths
+     * @param string|bool  $mode
      *
-     * (Example:
-     * "default:file.txt" - if added at least one path and
-     * "C:\server\test.dev\fy-folder" or "C:\server\test.dev\fy-folder\..\..\")
-     *
-     * @param string $alias
-     * @param string|bool $mode
      * @throws Exception
      */
-    public function set($paths, $alias = Path::DEFAULT_ALIAS, $mode = Path::MOD_PREPEND)
+    public function set($alias = Path::DEFAULT_ALIAS, $paths = array(), $mode = Path::MOD_PREPEND)
     {
-        $paths = (array) $paths;
+        $paths = (array)$paths;
 
         if (strlen($alias) < Path::MIN_ALIAS_LENGTH) {
             throw new Exception(sprintf('The minimum number of characters is %s', Path::MIN_ALIAS_LENGTH));
@@ -238,19 +237,19 @@ class Path
     /**
      * Remove path from registered paths.
      *
-     * @param $source (example: "default:file.txt")
+     * @param              $source (example: "default:file.txt")
      * @param string|array $key
      * @return bool
      */
     public function remove($source, $key)
     {
-        $keys = (array) $key;
+        $keys = (array)$key;
         list($alias) = $this->_parse($source);
 
         $return = false;
         if ($this->_isDeleted($alias, $keys)) {
             foreach ($keys as $key) {
-                $key = (int) $key;
+                $key = (int)$key;
                 if (array_key_exists($key, $this->_paths[$alias])) {
                     unset($this->_paths[$alias][$key]);
                     $return = true;
@@ -281,7 +280,7 @@ class Path
     /**
      * Get url to a file.
      *
-     * @param string $source (example: "default:file.txt" or "C:\server\test.dev\file.txt")
+     * @param string    $source (example: "default:file.txt" or "C:\server\test.dev\file.txt")
      * @param bool|true $full
      * @return null|string
      */
@@ -323,8 +322,8 @@ class Path
      * Add path to hold.
      *
      * @param string|array $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
-     * @param string $alias
-     * @param string|bool $mode
+     * @param string       $alias
+     * @param string|bool  $mode
      * @return void
      */
     protected function _add($path, $alias, $mode)
@@ -357,12 +356,12 @@ class Path
      * Find actual file or directory in the paths.
      *
      * @param string|array $paths
-     * @param string $file
+     * @param string       $file
      * @return null|string
      */
     protected function _find($paths, $file)
     {
-        $paths = (array) $paths;
+        $paths = (array)$paths;
         $file  = ltrim($file, "\\/");
 
         foreach ($paths as $path) {
@@ -378,7 +377,7 @@ class Path
     /**
      * Get add path.
      *
-     * @param $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
+     * @param        $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
      * @param        $path
      * @param string $dirSep
      * @return null|string
@@ -400,7 +399,7 @@ class Path
      * Get url path.
      *
      * @param string $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
-     * @param bool $exitsFile
+     * @param bool   $exitsFile
      * @return string
      * @throws Exception
      */
@@ -436,7 +435,7 @@ class Path
      * Checking the possibility of removing the path.
      *
      * @param string $alias
-     * @param array $keys
+     * @param array  $keys
      * @return bool
      */
     protected function _isDeleted($alias, $keys)
@@ -477,8 +476,8 @@ class Path
      * Reset added paths.
      *
      * @param array $paths (example: "default:file.txt" or "C:/Server/public_html/index.php")
-     * @param $alias
-     * @param $mode
+     * @param       $alias
+     * @param       $mode
      * @return bool
      */
     protected function _reset($paths, $alias, $mode)
