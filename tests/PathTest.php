@@ -69,9 +69,9 @@ class PathTest extends PHPUnit
         $fs->mkdir($importDir);
         $fs->mkdir($exportDir);
 
-        $default->set($defaultDir, 'defau/lt');
-        $import->set($importDir, 'Defau\\l//t');
-        $export->set(array(
+        $default->add($defaultDir, 'defau/lt');
+        $import->add($importDir, 'Defau\\l//t');
+        $export->add(array(
             $exportDir,
             $importDir,
         ), '()de~~fau+!#$lt');
@@ -85,7 +85,7 @@ class PathTest extends PHPUnit
 
         $_SERVER['HTTP_HOST']   = 'test.dev';
         $_SERVER['SERVER_PORT'] = 80;
-        $_SERVER['REQUEST_URI'] = '/';
+        $_SERVER['REQUEST_URI'] = '/page';
 
         $fs->dumpFile($defaultDir . DS . 'file.txt', '');
         $fs->dumpFile($importDir . DS . 'simple.txt', '');
@@ -95,33 +95,33 @@ class PathTest extends PHPUnit
         $import->setRoot($this->_root);
         $export->setRoot($this->_root);
 
-        $current = Url::current();
-        isSame($current . $name1 . '/file.txt', $default->uri('default:file.txt'));
-        isSame($current . $name1 . '/file.txt', $default->uri('default:\file.txt'));
-        isSame($current . $name1 . '/file.txt', $default->uri('default:/file.txt'));
-        isSame($current . $name1 . '/file.txt', $default->uri('default:////file.txt'));
-        isSame($current . $name1 . '/file.txt', $default->uri('default:\\\\file.txt'));
-        isSame($current . $name1 . '/file.txt', $default->uri($defaultDir . DS . 'file.txt'));
-        isSame($current . $name1 . '/file.txt', $default->uri($defaultDir . '///file.txt'));
-        isSame($current . $name1 . '/file.txt', $default->uri($defaultDir . '\\\\file.txt'));
+        $current = Url::root() . '/';
+        isSame($current . $name1 . '/file.txt', $default->url('default:file.txt'));
+        isSame($current . $name1 . '/file.txt', $default->url('default:\file.txt'));
+        isSame($current . $name1 . '/file.txt', $default->url('default:/file.txt'));
+        isSame($current . $name1 . '/file.txt', $default->url('default:////file.txt'));
+        isSame($current . $name1 . '/file.txt', $default->url('default:\\\\file.txt'));
+        isSame($current . $name1 . '/file.txt', $default->url($defaultDir . DS . 'file.txt'));
+        isSame($current . $name1 . '/file.txt', $default->url($defaultDir . '///file.txt'));
+        isSame($current . $name1 . '/file.txt', $default->url($defaultDir . '\\\\file.txt'));
 
-        isSame($current . $name2 . '/simple.txt', $import->uri('Default:simple.txt'));
-        isSame($current . $name2 . '/simple.txt', $import->uri('Default:\simple.txt'));
-        isSame($current . $name2 . '/simple.txt', $import->uri('Default:/simple.txt'));
-        isSame($current . $name2 . '/simple.txt', $import->uri('Default:////simple.txt'));
-        isSame($current . $name2 . '/simple.txt', $import->uri('Default:\\\\simple.txt'));
-        isSame($current . $name2 . '/simple.txt', $import->uri($importDir . DS . 'simple.txt'));
-        isSame($current . $name2 . '/simple.txt', $import->uri($importDir . '///simple.txt'));
-        isSame($current . $name2 . '/simple.txt', $import->uri($importDir . '\\\\simple.txt'));
+        isSame($current . $name2 . '/simple.txt', $import->url('Default:simple.txt'));
+        isSame($current . $name2 . '/simple.txt', $import->url('Default:\simple.txt'));
+        isSame($current . $name2 . '/simple.txt', $import->url('Default:/simple.txt'));
+        isSame($current . $name2 . '/simple.txt', $import->url('Default:////simple.txt'));
+        isSame($current . $name2 . '/simple.txt', $import->url('Default:\\\\simple.txt'));
+        isSame($current . $name2 . '/simple.txt', $import->url($importDir . DS . 'simple.txt'));
+        isSame($current . $name2 . '/simple.txt', $import->url($importDir . '///simple.txt'));
+        isSame($current . $name2 . '/simple.txt', $import->url($importDir . '\\\\simple.txt'));
 
-        isSame($current . $name3 . '/my-file.txt', $export->uri('default:my-file.txt'));
-        isSame($current . $name3 . '/my-file.txt', $export->uri('default:\my-file.txt'));
-        isSame($current . $name3 . '/my-file.txt', $export->uri('default:/my-file.txt'));
-        isSame($current . $name2 . '/simple.txt', $export->uri('default:////simple.txt'));
-        isSame($current . $name2 . '/simple.txt', $export->uri('default:\\\\simple.txt'));
-        isSame($current . $name3 . '/my-file.txt', $export->uri($exportDir . DS . 'my-file.txt'));
-        isSame($current . $name3 . '/my-file.txt', $export->uri($exportDir . '///my-file.txt'));
-        isSame($current . $name3 . '/my-file.txt', $export->uri($exportDir . '\\\\my-file.txt'));
+        isSame($current . $name3 . '/my-file.txt', $export->url('default:my-file.txt'));
+        isSame($current . $name3 . '/my-file.txt', $export->url('default:\my-file.txt'));
+        isSame($current . $name3 . '/my-file.txt', $export->url('default:/my-file.txt'));
+        isSame($current . $name2 . '/simple.txt', $export->url('default:////simple.txt'));
+        isSame($current . $name2 . '/simple.txt', $export->url('default:\\\\simple.txt'));
+        isSame($current . $name3 . '/my-file.txt', $export->url($exportDir . DS . 'my-file.txt'));
+        isSame($current . $name3 . '/my-file.txt', $export->url($exportDir . '///my-file.txt'));
+        isSame($current . $name3 . '/my-file.txt', $export->url($exportDir . '\\\\my-file.txt'));
 
         $fs->remove(array($defaultDir, $importDir, $exportDir));
     }
@@ -137,13 +137,13 @@ class PathTest extends PHPUnit
             $this->_root . DS . $name,
         );
 
-        $path->set($paths);
+        $path->add($paths);
 
         $paths2 = array(
             $this->_root,
             $this->_root . DS . $name
         );
-        $path->set($paths2, 'test');
+        $path->add($paths2, 'test');
 
         $expected = array(
             $this->_root . DS . $name,
@@ -170,8 +170,8 @@ class PathTest extends PHPUnit
 
         $appendPath = $this->_root . DS . $name2;
 
-        $path->set($paths);
-        $path->set($appendPath, Path::DEFAULT_ALIAS, Path::MOD_APPEND);
+        $path->add($paths);
+        $path->add($appendPath, Path::DEFAULT_ALIAS, Path::MOD_APPEND);
 
         array_push($paths, $appendPath);
 
@@ -190,22 +190,22 @@ class PathTest extends PHPUnit
         $path = Path::getInstance(__METHOD__);
         $fs   = new Filesystem();
 
-        $path->set('default:folder');
+        $path->add('default:folder');
         isSame(array(), $path->getPaths('default:'));
 
-        $path->set('alias:folder');
+        $path->add('alias:folder');
         isSame(array(), $path->getPaths('alias:'));
 
-        $path->set($this->_root);
+        $path->add($this->_root);
         isSame($this->_clearPaths($this->_root), $path->getPaths('default:'));
 
-        $path->set('default:virtual-folder');
+        $path->add('default:virtual-folder');
         isSame($this->_clearPaths($this->_root), $path->getPaths('default:'));
 
         $newFolder = $this->_root . DS . 'virtual-folder';
         $fs->mkdir($newFolder);
 
-        $path->set('default:virtual-folder');
+        $path->add('default:virtual-folder');
         isSame($this->_clearPaths(array(
             $this->_root . DS . 'virtual-folder',
             $this->_root,
@@ -223,8 +223,8 @@ class PathTest extends PHPUnit
             $this->_root . DS . $name
         );
 
-        $path->set($this->_root . DS . $name . DS . 'simple');
-        $path->set($newPath, Path::DEFAULT_ALIAS, Path::MOD_RESET);
+        $path->add($this->_root . DS . $name . DS . 'simple');
+        $path->add($newPath, Path::DEFAULT_ALIAS, Path::MOD_RESET);
 
         isSame($this->_clearPaths($newPath), $path->getPaths(Path::DEFAULT_ALIAS));
     }
@@ -235,15 +235,15 @@ class PathTest extends PHPUnit
     public function testRegisterMinLength()
     {
         $path    = Path::getInstance(__METHOD__);
-        $path->set($this->_root, '');
-        $path->set($this->_root, 'a');
-        $path->set($this->_root, 'ab');
+        $path->add($this->_root, '');
+        $path->add($this->_root, 'a');
+        $path->add($this->_root, 'ab');
     }
 
     public function testEmptyPaths()
     {
         $path = Path::getInstance(__METHOD__);
-        $path->set($this->_paths);
+        $path->add($this->_paths);
 
         $packagePaths = $path->getPaths('alias:');
         isSame(array(), $packagePaths);
@@ -334,7 +334,7 @@ class PathTest extends PHPUnit
         $fs->dumpFile($symOrigDir . DS . 'test-symlink.txt', '');
         $fs->symlink($symOrigDir, $symLink, true);
 
-        $path->set($paths);
+        $path->add($paths);
 
         isSame($path->clean($f1), $path->get('default:text.txt'));
         isSame($path->clean($f2), $path->get('default:file.pot'));
@@ -366,7 +366,7 @@ class PathTest extends PHPUnit
     {
         $path = Path::getInstance(__METHOD__);
 
-        $path->set(array(
+        $path->add(array(
             $this->_root,
             $this->_root . DS . 'folder',
             $this->_root . DS . 'folder-2',
@@ -405,7 +405,7 @@ class PathTest extends PHPUnit
     {
         $path = Path::getInstance(__METHOD__);
 
-        $path->set(array(
+        $path->add(array(
             $this->_root,
             $this->_root . DS . 'folder',
             $this->_root . DS . 'folder-2',
@@ -456,70 +456,45 @@ class PathTest extends PHPUnit
         $fs->remove($dir);
     }
 
-    public function testUrn()
-    {
-        $path = Path::getInstance(__METHOD__);
-        $fs   = new Filesystem();
-        $path->setRoot(__DIR__);
-
-        // Check absolute path to urn.
-        isSame('file.txt', $path->urn(__DIR__ . '\/\file.txt'));
-        isSame('file.txt', $path->urn(__DIR__ . '\\\\file.txt'));
-        isSame('file.txt', $path->urn(__DIR__ . DS . 'file.txt'));
-        isSame('folder/file.txt', $path->urn(__DIR__ . DS . 'folder\\\\\\file.txt'));
-        isSame('folder/file.txt', $path->urn(__DIR__ . DS . 'folder\\\\//file.txt'));
-        isSame('folder/file.txt', $path->urn(__DIR__ . DS . 'folder' . DS . 'file.txt'));
-
-        isEmpty($path->urn(__DIR__ . '\/\file.txt', true));
-        isEmpty($path->urn(__DIR__ . '\\\\file.txt', true));
-
-        //  Check virtual path to urn.
-        $paths = array(
-            __DIR__ . DS . 'folder-1',
-            __DIR__ . DS . 'folder-2',
-            __DIR__ . DS . 'folder',
-        );
-
-        list($dir1, $dir2, $dir3) = $paths;
-
-        $fs->dumpFile($dir1 . DS . 'file1.txt', '');
-        $fs->dumpFile($dir2 . DS . 'file2.txt', '');
-        $fs->dumpFile($dir3 . DS . 'hello' . DS . 'file3.txt', '');
-
-        $path->set($paths);
-
-        isSame('folder-1/file1.txt', $path->urn('default:file1.txt'));
-        isSame('folder-1/file1.txt', $path->urn('default:file1.txt/'));
-        isSame('folder-1/file1.txt', $path->urn('default:file1.txt\\'));
-        isSame('folder-2/file2.txt', $path->urn('default:/file2.txt'));
-        isSame('folder-2/file2.txt', $path->urn('default:\\/file2.txt'));
-        isSame('folder/hello/file3.txt', $path->urn('default:hello/file3.txt'));
-        isSame('folder/hello/file3.txt', $path->urn('default:/hello/file3.txt'));
-        isSame('folder/hello/file3.txt', $path->urn('default:hello////file3.txt'));
-        isSame('folder/hello/file3.txt', $path->urn('default:hello\\\\\\file3.txt/'));
-
-        $fs->remove(array($dir1, $dir2, $dir3));
-    }
-
     /**
      * @expectedException \JBZoo\Path\Exception
      */
-    public function testRelativeFail()
+    public function testNotSetRoot()
     {
         $path = Path::getInstance(__METHOD__);
-        $path->set($this->_paths);
-        $path->urn('default:file.txt');
-        $path->urn(__DIR__);
+        $path->add($this->_paths);
+        $path->url('default:file.txt');
+        $path->url(__DIR__);
     }
 
-    public function testUrl()
+    public function testShortUrl()
     {
         $path = Path::getInstance(__METHOD__);
         $fs   = new Filesystem();
 
         $_SERVER['HTTP_HOST']   = 'test.dev';
         $_SERVER['SERVER_PORT'] = 80;
-        $_SERVER['REQUEST_URI'] = '/';
+        $_SERVER['REQUEST_URI'] = '/build';
+
+        $dir = $this->_root . DS . 'short';
+        $fs->dumpFile($dir . DS . 'file.txt', '');
+
+        $path->setRoot($this->_root);
+        $path->add($dir);
+
+        isSame('/short/file.txt', $path->url('default:file.txt', false));
+
+        $fs->remove($dir);
+    }
+
+    public function testFullUrl()
+    {
+        $path = Path::getInstance(__METHOD__);
+        $fs   = new Filesystem();
+
+        $_SERVER['HTTP_HOST']   = 'test.dev';
+        $_SERVER['SERVER_PORT'] = 80;
+        $_SERVER['REQUEST_URI'] = '/custom';
 
         $paths = array(
             $this->_root . DS . 'my-folder',
@@ -537,33 +512,33 @@ class PathTest extends PHPUnit
         list($path1, $path2) = $paths;
 
         $path->setRoot($this->_root);
-        $path->set($paths);
+        $path->add($paths);
 
-        $current = Url::current();
+        $current = Url::root() . '/';
 
         $file1 = $current . 'my-folder2/dir/file1.txt';
         $file2 = $current . 'my-folder/file0.txt';
         $file3 = $current . 'my-folder2/my-file.txt';
 
-        isSame($file1, $path->uri('default:file1.txt'));
-        isSame($file3, $path->uri('default:my-folder2/my-file.txt'));
-        isSame($file3, $path->uri('default:my-folder2\\\\my-file.txt'));
-        isSame($file3, $path->uri('default:\my-folder2\my-file.txt'));
+        isSame($file1, $path->url('default:file1.txt'));
+        isSame($file3, $path->url('default:my-folder2/my-file.txt'));
+        isSame($file3, $path->url('default:my-folder2\\\\my-file.txt'));
+        isSame($file3, $path->url('default:\my-folder2\my-file.txt'));
 
-        isSame($file1, $path->uri($path2 . DS . 'file1.txt'));
-        isSame($file2, $path->uri($path1 . DS . 'file0.txt'));
-        isSame($file2, $path->uri($path1 . '/file0.txt'));
-        isSame($file3, $path->uri($this->_root . '\my-folder2\my-file.txt'));
-        isSame($file3, $path->uri($this->_root . '/my-folder2////my-file.txt'));
-        isSame($file3, $path->uri($this->_root . DS . 'my-folder2' . DS . 'my-file.txt'));
+        isSame($file1, $path->url($path2 . DS . 'file1.txt'));
+        isSame($file2, $path->url($path1 . DS . 'file0.txt'));
+        isSame($file2, $path->url($path1 . '/file0.txt'));
+        isSame($file3, $path->url($this->_root . '\my-folder2\my-file.txt'));
+        isSame($file3, $path->url($this->_root . '/my-folder2////my-file.txt'));
+        isSame($file3, $path->url($this->_root . DS . 'my-folder2' . DS . 'my-file.txt'));
 
-        isSame($file2 . '?data=test&value=hello', $path->uri($path1 . DS . 'file0.txt?data=test&value=hello'));
+        isSame($file2 . '?data=test&value=hello', $path->url($path1 . DS . 'file0.txt?data=test&value=hello'));
 
-        isNull($path->uri('default:file.txt'));
-        isNull($path->uri('alias:file.txt'));
+        isNull($path->url('default:file.txt'));
+        isNull($path->url('alias:file.txt'));
 
-        isNull($path->uri($this->_root . DS . 'my-folder2' . DS . 'file.txt'));
-        isNull($path->uri($this->_root . 'my/' . DS . 'file.txt'));
+        isNull($path->url($this->_root . DS . 'my-folder2' . DS . 'file.txt'));
+        isNull($path->url($this->_root . 'my/' . DS . 'file.txt'));
 
         $fs->remove(array(
             $path1, $path2,
@@ -580,7 +555,7 @@ class PathTest extends PHPUnit
             $this->_root . '/..',
             $this->_root . '/../../',
         );
-        $path->set($paths);
+        $path->add($paths);
 
         list($path1, $path2, $path3) = $paths;
 
@@ -591,43 +566,6 @@ class PathTest extends PHPUnit
         );
 
         isSame($expected, $path->getPaths('default:'));
-    }
-
-    public function testBenchmark()
-    {
-        $fs = new Filesystem();
-
-        runBench(array(
-            'JBZoo\Path' => function () use ($fs) {
-
-                $dirName = mt_rand();
-                $path    = __DIR__ . DS . $dirName;
-                $fs->mkdir($path);
-
-                // start
-                $Path = Path::getInstance('JBZooPath');
-                $Path->set(__DIR__ . DS . $dirName);
-                $result = $Path->get('default:');
-                // end
-
-                $fs->remove($path);
-
-                return $result;
-            },
-            'RealPath'   => function () use ($fs) {
-                $dirName = mt_rand();
-                $path    = __DIR__ . DS . $dirName;
-                $fs->mkdir($path);
-
-                // start
-                $result = realpath($path);
-                // end
-
-                $fs->remove($path);
-
-                return $result;
-            },
-        ), array('count' => 500, 'name' => 'Path lib'));
     }
 
     protected function _clearPaths($paths)

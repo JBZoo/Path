@@ -12,7 +12,6 @@
  * @link      https://github.com/JBZoo/Path
  */
 
-
 if (!defined('ROOT_PATH')) { // for PHPUnit process isolation
     define('ROOT_PATH', realpath('.'));
 }
@@ -23,10 +22,4 @@ if ($autoload = realpath('./vendor/autoload.php')) {
 } else {
     echo 'Please execute "composer update" !' . PHP_EOL;
     exit(1);
-}
-
-
-// Just example
-if ($fixturesPath = realpath(PROJECT_TESTS . '/fixtures.php')) {
-    require_once PROJECT_TESTS . '/fixtures.php';
 }

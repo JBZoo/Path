@@ -14,7 +14,8 @@
 
 namespace JBZoo\PHPUnit;
 
-use JBZoo\Path\Package;
+use JBZoo\Path\Path;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Class PerformanceTest
@@ -34,12 +35,49 @@ class PerformanceTest extends PHPUnit
 
         for ($i = 0; $i < $this->_max; $i++) {
             // Your code start
-            $obj = new Package();
-            $obj->doSomeStreetMagic();
-            unset($obj);
+            $path = Path::getInstance(__FUNCTION__);
+            $path->add(__DIR__ . DS . mt_rand());
+            unset($path);
             // Your code finish
         }
 
         alert($this->loopProfiler($this->_max), 'Create - min');
+    }
+
+    public function testBenchmark()
+    {
+        $fs = new Filesystem();
+
+        runBench(array(
+            'JBZoo\Path' => function () use ($fs) {
+
+                $dirName = mt_rand();
+                $path    = __DIR__ . DS . $dirName;
+                $fs->mkdir($path);
+
+                // start
+                $Path = Path::getInstance('JBZooPath');
+                $Path->add(__DIR__ . DS . $dirName);
+                $result = $Path->get('default:');
+                // end
+
+                $fs->remove($path);
+
+                return $result;
+            },
+            'RealPath'   => function () use ($fs) {
+                $dirName = mt_rand();
+                $path    = __DIR__ . DS . $dirName;
+                $fs->mkdir($path);
+
+                // start
+                $result = realpath($path);
+                // end
+
+                $fs->remove($path);
+
+                return $result;
+            },
+        ), array('count' => 500, 'name' => 'Path lib'));
     }
 }
