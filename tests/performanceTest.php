@@ -23,27 +23,6 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class PerformanceTest extends PHPUnit
 {
-    protected $_max = 1000000;
-
-    public function testLeakMemoryCreate()
-    {
-        if ($this->isXDebug()) {
-            return;
-        }
-
-        $this->startProfiler();
-
-        for ($i = 0; $i < $this->_max; $i++) {
-            // Your code start
-            $path = Path::getInstance(__FUNCTION__);
-            $path->add(__DIR__ . DS . mt_rand());
-            unset($path);
-            // Your code finish
-        }
-
-        alert($this->loopProfiler($this->_max), 'Create - min');
-    }
-
     public function testBenchmark()
     {
         $fs = new Filesystem();
@@ -57,7 +36,7 @@ class PerformanceTest extends PHPUnit
 
                 // start
                 $Path = Path::getInstance('JBZooPath');
-                $Path->add(__DIR__ . DS . $dirName);
+                $Path->set(Path::DEFAULT_ALIAS, __DIR__ . DS . $dirName);
                 $result = $Path->get('default:');
                 // end
 
