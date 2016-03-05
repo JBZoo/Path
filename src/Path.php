@@ -89,7 +89,7 @@ class Path
         }
 
         if (!isset(self::$_objects[$key])) {
-            self::$_objects[$key] = new self($key);
+            self::$_objects[$key] = new self();
         }
 
         return self::$_objects[$key];
