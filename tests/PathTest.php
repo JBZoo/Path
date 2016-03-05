@@ -29,9 +29,25 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class PathTest extends PHPUnit
 {
-
     protected $_root;
+
     protected $_paths = array();
+
+    /**
+     * @param $paths
+     * @return array
+     */
+    protected function _clearPaths($paths)
+    {
+        $return = array();
+        $paths  = (array)$paths;
+
+        foreach ($paths as $key => $path) {
+            $return[$key] = FS::clean($path, '/');
+        }
+
+        return $return;
+    }
 
     public function setUp()
     {
@@ -584,7 +600,7 @@ class PathTest extends PHPUnit
         isSame($expected, $path->getPaths('default:'));
     }
 
-    public function testAddDeprecated()
+    public function testDeprecated_add()
     {
         $path = Path::getInstance(__METHOD__);
 
@@ -615,19 +631,18 @@ class PathTest extends PHPUnit
         isSame($this->_clearPaths($expected), $defaultPaths);
     }
 
-    /**
-     * @param $paths
-     * @return array
-     */
-    protected function _clearPaths($paths)
+    public function testGlob()
     {
-        $return = array();
-        $paths  = (array)$paths;
+        $path = new Path();
 
-        foreach ($paths as $key => $path) {
-            $return[$key] = FS::clean($path, '/');
-        }
+        $path->set('root', __DIR__ . '/..');
+        $path->set('src', 'root:src');
 
-        return $return;
+        $paths = $path->glob('root:src/*.php');
+
+        isSame($this->_clearPaths(array(
+            PROJECT_ROOT . '/src/Exception.php',
+            PROJECT_ROOT . '/src/Path.php',
+        )), $paths);
     }
 }

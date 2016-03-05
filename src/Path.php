@@ -195,6 +195,18 @@ class Path
     }
 
     /**
+     * Get absolute path to a file or a directory.
+     *
+     * @param $source (example: "default:file.txt")
+     * @return null|string
+     */
+    public function glob($source)
+    {
+        list(, $paths, $path) = $this->_parse($source);
+        return $this->_find($paths, $path, true);
+    }
+
+    /**
      * Get all absolute path to a file or a directory.
      *
      * @param $source (example: "default:file.txt")
@@ -356,18 +368,26 @@ class Path
      *
      * @param string|array $paths
      * @param string       $file
-     * @return null|string
+     * @param bool         $isGlob
+     * @return null|string|array
      */
-    protected function _find($paths, $file)
+    protected function _find($paths, $file, $isGlob = false)
     {
         $paths = (array)$paths;
         $file  = ltrim($file, "\\/");
 
         foreach ($paths as $path) {
+
             $fullPath = $this->clean($path . '/' . $file);
-            if (file_exists($fullPath) || is_dir($fullPath)) {
+
+            if ($isGlob) {
+                $paths = glob($fullPath) ?: array();
+                return $paths;
+
+            } elseif (file_exists($fullPath) || is_dir($fullPath)) {
                 return $fullPath;
             }
+
         }
 
         return null;
@@ -450,20 +470,12 @@ class Path
      * Parse source string.
      *
      * @param string $source (example: "default:file.txt")
-     * @param string $alias
      * @return array
      */
-    protected function _parse($source, $alias = '')
+    protected function _parse($source)
     {
-        $path  = null;
-        $parts = explode(':', $source, 2);
-        $count = count($parts);
-
-        if ($count == 1) {
-            list($path) = $parts;
-        } elseif ($count == 2) {
-            list($alias, $path) = $parts;
-        }
+        $path = null;
+        list($alias, $path) = explode(':', $source, 2);
 
         $path  = ltrim($path, "\\/");
         $paths = isset($this->_paths[$alias]) ? $this->_paths[$alias] : array();
