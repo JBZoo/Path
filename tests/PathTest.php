@@ -260,7 +260,16 @@ class PathTest extends PHPUnit
     public function testRegisterMinLength()
     {
         $path = Path::getInstance(__METHOD__);
-        $path->set('ab', $this->_root);
+        $path->set('a', $this->_root);
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testRegisterEmptyKey()
+    {
+        $path = Path::getInstance(__METHOD__);
+        $path->set(false, $this->_root);
     }
 
     public function testEmptyPaths()
@@ -643,6 +652,34 @@ class PathTest extends PHPUnit
         isSame($this->_clearPaths(array(
             PROJECT_ROOT . '/src/Exception.php',
             PROJECT_ROOT . '/src/Path.php',
+        )), $paths);
+    }
+
+    public function testRelative()
+    {
+        $path = new Path();
+
+        $path->setRoot(__DIR__ . '/..');
+        $path->set('root', __DIR__ . '/..');
+        $path->set('src', 'root:src');
+
+        $actual = $path->rel('root:src/Path.php');
+        isSame('src/Path.php', $actual);
+    }
+
+    public function testRelativeGlob()
+    {
+        $path = new Path();
+
+        $path->setRoot(__DIR__ . '/..');
+        $path->set('root', __DIR__ . '/..');
+        $path->set('src', 'root:src');
+
+        $paths = $path->relGlob('root:src/*.php');
+
+        isSame($this->_clearPaths(array(
+            'src/Exception.php',
+            'src/Path.php',
         )), $paths);
     }
 }

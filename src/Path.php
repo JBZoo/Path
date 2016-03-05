@@ -24,13 +24,12 @@ use JBZoo\Utils\Url;
  */
 class Path
 {
-
     /**
      * Minimal alias name length.
      *
      * @var string
      */
-    const MIN_ALIAS_LENGTH = 3;
+    const MIN_ALIAS_LENGTH = 2;
 
     /**
      * Mod prepend rule add paths.
@@ -198,7 +197,7 @@ class Path
      * Get absolute path to a file or a directory.
      *
      * @param $source (example: "default:file.txt")
-     * @return null|string
+     * @return array()
      */
     public function glob($source)
     {
@@ -330,6 +329,34 @@ class Path
     }
 
     /**
+     * Get relative path to file or directory
+     *
+     * @param string $source (example: "default:file.txt")
+     * @return null|string
+     */
+    public function rel($source)
+    {
+        $fullpath = $this->get($source);
+        return FS::getRelative($fullpath, $this->_root, '/');
+    }
+
+    /**
+     * Get list of relative path to file or directory
+     *
+     * @param string $source (example: "default:*.txt")
+     * @return null|string
+     */
+    public function relGlob($source)
+    {
+        $list = $this->glob($source);
+        foreach ($list as $key => $item) {
+            $list[$key] = FS::getRelative($item, $this->_root, '/');
+        }
+
+        return $list;
+    }
+
+    /**
      * Add path to hold.
      *
      * @param string|array $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
@@ -381,8 +408,9 @@ class Path
             $fullPath = $this->clean($path . '/' . $file);
 
             if ($isGlob) {
-                $paths = glob($fullPath) ?: array();
-                return $paths;
+                $paths = glob($fullPath);
+                $paths = array_filter((array)$paths);
+                return $paths ?: array();
 
             } elseif (file_exists($fullPath) || is_dir($fullPath)) {
                 return $fullPath;
