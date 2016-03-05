@@ -36,7 +36,7 @@ class PerformanceTest extends PHPUnit
 
                 // start
                 $Path = Path::getInstance('JBZooPath');
-                $Path->set(Path::DEFAULT_ALIAS, __DIR__ . DS . $dirName);
+                $Path->set('default', __DIR__ . DS . $dirName);
                 $result = $Path->get('default:');
                 // end
 

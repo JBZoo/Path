@@ -21,4 +21,5 @@ namespace JBZoo\Path;
  */
 class Exception extends \Exception
 {
+
 }

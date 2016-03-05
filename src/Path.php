@@ -26,13 +26,6 @@ class Path
 {
 
     /**
-     * Default alias name.
-     *
-     * @var string
-     */
-    const DEFAULT_ALIAS = 'default';
-
-    /**
      * Minimal alias name length.
      *
      * @var string
@@ -61,7 +54,7 @@ class Path
     const MOD_RESET = 'reset';
 
     /**
-     * Holds object instance.
+     * Pull of instance
      *
      * @var array
      */
@@ -75,11 +68,42 @@ class Path
     protected $_paths = array();
 
     /**
-     * Hold root dir.
+     * Root dir.
      *
      * @var string
      */
     protected $_root;
+
+    /**
+     * Get path instance.
+     *
+     * @param string $key
+     * @return Path
+     *
+     * @throws Exception
+     */
+    public static function getInstance($key = 'default')
+    {
+        if (empty($key)) {
+            throw new Exception('Invalid object key');
+        }
+
+        if (!isset(self::$_objects[$key])) {
+            self::$_objects[$key] = new self($key);
+        }
+
+        return self::$_objects[$key];
+    }
+
+    /**
+     * Get instance keys.
+     *
+     * @return array
+     */
+    public function getInstanceKeys()
+    {
+        return array_keys(self::$_objects);
+    }
 
     /**
      * Register alias locations in file system.
@@ -93,7 +117,7 @@ class Path
      *
      * @throws Exception
      */
-    public function set($alias = Path::DEFAULT_ALIAS, $paths = array(), $mode = Path::MOD_PREPEND)
+    public function set($alias, $paths, $mode = Path::MOD_PREPEND)
     {
         $paths = (array)$paths;
 
@@ -116,6 +140,21 @@ class Path
                 $this->_add($path, $alias, $mode);
             }
         }
+    }
+
+    /**
+     * Old version of set() method
+     *
+     * @param string|array $paths
+     * @param string       $alias
+     * @param string       $mode
+     * @throws Exception
+     *
+     * @deprecated
+     */
+    public function add($paths, $alias = 'default', $mode = Path::MOD_PREPEND)
+    {
+        $this->set($alias, $paths, $mode);
     }
 
     /**
@@ -156,31 +195,6 @@ class Path
     }
 
     /**
-     * Get path instance.
-     *
-     * @param string $key
-     * @return \JBZoo\Path\Path
-     */
-    public static function getInstance($key = 'default')
-    {
-        if (!isset(self::$_objects[$key])) {
-            self::$_objects[$key] = new self($key);
-        }
-
-        return self::$_objects[$key];
-    }
-
-    /**
-     * Get instance keys.
-     *
-     * @return array
-     */
-    public function getInstanceKeys()
-    {
-        return array_keys(self::$_objects);
-    }
-
-    /**
      * Get all absolute path to a file or a directory.
      *
      * @param $source (example: "default:file.txt")
@@ -188,7 +202,7 @@ class Path
      */
     public function getPaths($source)
     {
-        list(, $paths) = $this->_parse($source);
+        list(, $paths) = $this->_parse($source . ':');
         return $paths;
     }
 
@@ -301,21 +315,6 @@ class Path
         }
 
         return null;
-    }
-
-    /**
-     * Path constructor.
-     *
-     * @param string $key
-     * @throws Exception
-     */
-    protected function __construct($key = 'default')
-    {
-        if (empty($key)) {
-            throw new Exception('Invalid object key');
-        }
-
-        static::$_objects[$key] = $key;
     }
 
     /**
@@ -454,7 +453,7 @@ class Path
      * @param string $alias
      * @return array
      */
-    protected function _parse($source, $alias = Path::DEFAULT_ALIAS)
+    protected function _parse($source, $alias = '')
     {
         $path  = null;
         $parts = explode(':', $source, 2);
