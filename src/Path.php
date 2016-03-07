@@ -71,7 +71,7 @@ class Path
      *
      * @var array
      */
-    public static $_objects = array();
+    protected static $_objects = array();
 
     /**
      * Get path instance.
@@ -125,9 +125,10 @@ class Path
             throw new Exception(sprintf('The minimum number of characters is %s', Path::MIN_ALIAS_LENGTH));
         }
 
-        if ($mode === self::MOD_RESET) {
-            $this->_reset($paths, $alias);
-            return;
+        if ($mode === self::MOD_RESET) { // Reset mode
+            $this->_paths[$alias] = array();
+
+            $mode = self::MOD_PREPEND; // Add new paths in Prepend mode
         }
 
         foreach ($paths as $path) {
@@ -136,11 +137,11 @@ class Path
                 $this->_paths[$alias] = array();
             }
 
-            $path = FS::clean($path, '/');
+            $path = $this->_clean($path);
             if ($path && !in_array($path, $this->_paths[$alias], true)) {
 
                 if (preg_match('/^' . preg_quote($alias . ':') . '/i', $path)) {
-                    throw new Exception(sprintf('Added looped path "%s" to key "%s"', print_r($path, true), $alias));
+                    throw new Exception(sprintf('Added looped path "%s" to key "%s"', $path, $alias));
                 }
 
                 $this->_addNewPath($path, $alias, $mode);
@@ -172,7 +173,7 @@ class Path
     public function clean($path)
     {
         $tokens = array();
-        $path   = FS::clean($path, '/');
+        $path   = $this->_clean($path);
         $prefix = $this->prefix($path);
         $path   = substr($path, strlen($prefix));
         $parts  = array_filter(explode('/', $path), 'strlen');
@@ -264,7 +265,7 @@ class Path
      */
     public function prefix($path)
     {
-        $path = FS::clean($path, '/');
+        $path = $this->_clean($path);
         return preg_match('|^(?P<prefix>([a-zA-Z]+:)?//?)|', $path, $matches) ? $matches['prefix'] : null;
     }
 
@@ -285,7 +286,7 @@ class Path
 
         foreach ($paths as $path) {
 
-            $path = $this->_cleanPath($path, '/');
+            $path = $this->_cleanPath($path);
 
             $key = array_search($path, $this->_paths[$alias], true);
             if (false !== $key) {
@@ -310,7 +311,7 @@ class Path
         }
 
         if (!isset($this->_root)) {
-            $this->_root = FS::clean($dir, '/');
+            $this->_root = $this->_clean($dir);
         }
     }
 
@@ -326,7 +327,7 @@ class Path
         $details = explode('?', $source);
 
         $path = $details[0];
-        $path = $this->_cleanPath($path, '/');
+        $path = $this->_cleanPath($path);
         $path = $this->_getUrlPath($path, true);
 
         if (!empty($path)) {
@@ -379,7 +380,7 @@ class Path
      */
     protected function _addNewPath($path, $alias, $mode)
     {
-        $path = $this->_cleanPath($path, '/');
+        $path = $this->_cleanPath($path);
         if ($path !== null) {
             if ($mode == self::MOD_PREPEND) {
                 array_unshift($this->_paths[$alias], $path);
@@ -439,20 +440,20 @@ class Path
      *
      * @param string $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
      * @param string $path
-     * @param string $dirSep
      * @return null|string
      */
-    protected function _cleanPath($path, $dirSep = DIRECTORY_SEPARATOR)
+    protected function _cleanPath($path)
     {
         if ($this->isVirtual($path)) {
-            return FS::clean($path, $dirSep);
+            return $this->_clean($path);
         }
 
         if ($this->_hasCDBack($path)) {
-            return (realpath($path)) ? (FS::clean(realpath($path), $dirSep)) : null;
+            $realpath = $this->_clean(realpath($path));
+            return $realpath ?: null;
         }
 
-        return FS::clean($path, $dirSep);
+        return $this->_clean($path);
     }
 
     /**
@@ -467,7 +468,7 @@ class Path
     {
         $this->_checkRoot();
 
-        $path = $this->_cleanPath($path, '/');
+        $path = $this->_cleanPath($path);
         if ($this->isVirtual($path)) {
             $path = $this->get($path);
         }
@@ -490,7 +491,7 @@ class Path
      */
     protected function _hasCDBack($path)
     {
-        $path = FS::clean($path, '/');
+        $path = $this->_clean($path);
         return preg_match('(/\.\.$|/\.\./$)', $path);
     }
 
@@ -539,28 +540,12 @@ class Path
     }
 
     /**
-     * Reset added paths.
-     *
-     * @param array  $paths (example: "default:file.txt" or "C:/Server/public_html/index.php")
-     * @param string $alias
-     * @return bool
-     */
-    protected function _reset($paths, $alias)
-    {
-        $this->_paths[$alias] = array();
-        foreach ($paths as $path) {
-            $this->_paths[$alias][] = FS::clean($path, '/');
-        }
-    }
-
-    /**
      * @param $alias
      * @return mixed|string
      */
     protected function _cleanAlias($alias)
     {
-        $alias = strtolower($alias);
-        $alias = preg_replace('/[^a-z0-9_\.-]/', '', $alias);
+        $alias = preg_replace('/[^a-z0-9_\.-]/i', '', $alias);
         return $alias;
     }
 
@@ -574,5 +559,16 @@ class Path
         $source .= ':';
 
         return $source;
+    }
+
+    /**
+     * Forced clean path with linux-like sleshes
+     *
+     * @param string $path
+     * @return string
+     */
+    protected function _clean($path)
+    {
+        return FS::clean($path, '/');
     }
 }

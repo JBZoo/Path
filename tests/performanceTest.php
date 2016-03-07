@@ -35,12 +35,12 @@ class PerformanceTest extends PHPUnit
                 $fs->mkdir($path);
 
                 // start
-                $Path = Path::getInstance('JBZooPath');
-                $Path->set('default', __DIR__ . DS . $dirName);
-                $result = $Path->get('default:');
+                $path = new Path();
+                $path->set('default', __DIR__ . DS . $dirName);
+                $result = $path->get('default:');
                 // end
 
-                $fs->remove($path);
+                $fs->remove($result);
 
                 return $result;
             },
@@ -53,7 +53,7 @@ class PerformanceTest extends PHPUnit
                 $result = realpath($path);
                 // end
 
-                $fs->remove($path);
+                $fs->remove($result);
 
                 return $result;
             },
