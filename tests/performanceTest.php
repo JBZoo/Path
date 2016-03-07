@@ -35,9 +35,10 @@ class PerformanceTest extends PHPUnit
                 $fs->mkdir($path);
 
                 // start
-                $path = new Path();
-                $path->set('default', __DIR__ . DS . $dirName);
-                $result = $path->get('default:');
+                $virtPath = new Path();
+                $virtPath->set('default', __DIR__ . DS . $dirName);
+                $result = $virtPath->get('default:');
+                unset($virtPath);
                 // end
 
                 $fs->remove($result);
