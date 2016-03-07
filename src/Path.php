@@ -205,7 +205,7 @@ class Path
      * Get absolute path to a file or a directory.
      *
      * @param $source (example: "default:file.txt")
-     * @return array()
+     * @return array
      */
     public function glob($source)
     {
@@ -351,7 +351,7 @@ class Path
      */
     public function rel($source)
     {
-        $fullpath = $this->get($source);
+        $fullpath = (string)$this->get($source);
         return FS::getRelative($fullpath, $this->_root, '/');
     }
 
@@ -363,7 +363,7 @@ class Path
      */
     public function relGlob($source)
     {
-        $list = $this->glob($source);
+        $list = (array)$this->glob($source);
         foreach ($list as $key => $item) {
             $list[$key] = FS::getRelative($item, $this->_root, '/');
         }
@@ -381,14 +381,14 @@ class Path
      */
     protected function _addNewPath($path, $alias, $mode)
     {
-        $path = $this->_cleanPath($path);
-        if ($path !== null) {
+        if ($cleanPath = $this->_cleanPath($path)) {
+
             if ($mode == self::MOD_PREPEND) {
-                array_unshift($this->_paths[$alias], $path);
+                array_unshift($this->_paths[$alias], $cleanPath);
             }
 
             if ($mode == self::MOD_APPEND) {
-                array_push($this->_paths[$alias], $path);
+                array_push($this->_paths[$alias], $cleanPath);
             }
         }
     }

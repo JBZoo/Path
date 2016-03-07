@@ -71,7 +71,7 @@ class PerformanceTest extends PHPUnit
 
                 return $result;
             },
-        ), array('count' => 500, 'name' => 'Compare with realpath'));
+        ), array('count' => 1000, 'name' => 'Compare with realpath'));
     }
 
     public function testPathResolver()
@@ -83,7 +83,7 @@ class PerformanceTest extends PHPUnit
         $virtPath->set('default', $root);
 
         runBench(array(
-            'new path (new)'  => function () use ($fs, $root) {
+            'new path (new obj and dir)'  => function () use ($fs, $root) {
 
                 $newDir = $root . mt_rand();
                 $fs->mkdir($newDir);
@@ -93,8 +93,6 @@ class PerformanceTest extends PHPUnit
                 $virtPath->set('default', $newDir);
                 $result = $virtPath->get('default:');
                 // end
-
-                $fs->remove($result);
 
                 return $result;
             },
