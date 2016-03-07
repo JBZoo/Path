@@ -37,7 +37,7 @@ class PathTest extends PHPUnit
      * @param $paths
      * @return array
      */
-    protected function _clearPaths($paths)
+    protected function _clr($paths)
     {
         $return = array();
         $paths  = (array)$paths;
@@ -47,6 +47,17 @@ class PathTest extends PHPUnit
         }
 
         return $return;
+    }
+
+    /**
+     * Normilize slashes and compare paths
+     *
+     * @param $expected
+     * @param $actual
+     */
+    protected function _is($expected, $actual)
+    {
+        isSame($this->_clr($expected), $this->_clr($actual));
     }
 
     public function setUp()
@@ -101,10 +112,10 @@ class PathTest extends PHPUnit
             $importDir,
         ));
 
-        isSame($this->_clearPaths($defaultDir), $default->getPaths('default:'));
-        isSame($this->_clearPaths($importDir), $import->getPaths('Default:'));
+        $this->_is($defaultDir, $default->getPaths('default'));
+        $this->_is($importDir, $import->getPaths('Default'));
 
-        isSame($this->_clearPaths(array($importDir, $exportDir)), $export->getPaths('default:'));
+        $this->_is(array($importDir, $exportDir), $export->getPaths('default:'));
 
         isSame(array('default', 'import', 'export'), $default->getInstanceKeys());
 
@@ -148,6 +159,8 @@ class PathTest extends PHPUnit
         isSame($current . $name3 . '/my-file.txt', $export->url($exportDir . '///my-file.txt'));
         isSame($current . $name3 . '/my-file.txt', $export->url($exportDir . '\\\\my-file.txt'));
 
+        isSame($current . $name3 . '/my-file.txt?ver=123', $export->url($exportDir . '\\\\my-file.txt?ver=123'));
+
         $fs->remove(array($defaultDir, $importDir, $exportDir));
     }
 
@@ -178,8 +191,8 @@ class PathTest extends PHPUnit
         $defaultPaths = $path->getPaths('default:');
         $testPaths    = $path->getPaths('test:');
 
-        isSame($this->_clearPaths($expected), $testPaths);
-        isSame($this->_clearPaths($expected), $defaultPaths);
+        $this->_is($expected, $testPaths);
+        $this->_is($expected, $defaultPaths);
     }
 
     public function testSetPrepend()
@@ -207,7 +220,7 @@ class PathTest extends PHPUnit
         );
 
         $package = $path->getPaths('default:');
-        isSame($this->_clearPaths($expected), $package);
+        $this->_is($expected, $package);
     }
 
     public function testSetVirtual()
@@ -222,19 +235,19 @@ class PathTest extends PHPUnit
         isSame(array(), $path->getPaths('alias:'));
 
         $path->set('default', $this->_root);
-        isSame($this->_clearPaths($this->_root), $path->getPaths('default:'));
+        $this->_is($this->_root, $path->getPaths('default:'));
 
         $path->set('default', 'default:virtual-folder');
-        isSame($this->_clearPaths($this->_root), $path->getPaths('default:'));
+        $this->_is($this->_root, $path->getPaths('default:'));
 
         $newFolder = $this->_root . DS . 'virtual-folder';
         $fs->mkdir($newFolder);
 
         $path->set('default', 'default:virtual-folder');
-        isSame($this->_clearPaths(array(
+        $this->_is(array(
             $this->_root . DS . 'virtual-folder',
             $this->_root,
-        )), $path->getPaths('default:'));
+        ), $path->getPaths('default:'));
 
         $fs->remove($newFolder);
     }
@@ -251,7 +264,7 @@ class PathTest extends PHPUnit
         $path->set('default', $this->_root . DS . $name . DS . 'simple');
         $path->set('default', $newPath, Path::MOD_RESET);
 
-        isSame($this->_clearPaths($newPath), $path->getPaths('default'));
+        $this->_is($newPath, $path->getPaths('default'));
     }
 
     /**
@@ -409,25 +422,25 @@ class PathTest extends PHPUnit
         ));
 
         $path->remove('default:', array(1, 3, 5));
-        isSame($this->_clearPaths(array(
+        $this->_is(array(
             0 => $this->_root . DS . 'folder-6',
             2 => $this->_root . DS . 'folder-4',
             4 => $this->_root . DS . 'folder-2',
             6 => $this->_root,
-        )), $path->getPaths('default'));
+        ), $path->getPaths('default'));
 
         $path->remove('default:', 0);
-        isSame($this->_clearPaths(array(
+        $this->_is(array(
             2 => $this->_root . DS . 'folder-4',
             4 => $this->_root . DS . 'folder-2',
             6 => $this->_root,
-        )), $path->getPaths('default'));
+        ), $path->getPaths('default'));
 
         $path->remove('default:', '2');
-        isSame($this->_clearPaths(array(
+        $this->_is(array(
             4 => $this->_root . DS . 'folder-2',
             6 => $this->_root,
-        )), $path->getPaths('default'));
+        ), $path->getPaths('default'));
 
         $path->remove('default:', array(4, '6'));
         isEmpty($path->getPaths('default'));
@@ -636,8 +649,8 @@ class PathTest extends PHPUnit
         $defaultPaths = $path->getPaths('default:');
         $testPaths    = $path->getPaths('test:');
 
-        isSame($this->_clearPaths($expected), $testPaths);
-        isSame($this->_clearPaths($expected), $defaultPaths);
+        $this->_is($expected, $testPaths);
+        $this->_is($expected, $defaultPaths);
     }
 
     public function testGlob()
@@ -649,10 +662,10 @@ class PathTest extends PHPUnit
 
         $paths = $path->glob('root:src/*.php');
 
-        isSame($this->_clearPaths(array(
+        $this->_is(array(
             PROJECT_ROOT . '/src/Exception.php',
             PROJECT_ROOT . '/src/Path.php',
-        )), $paths);
+        ), $paths);
     }
 
     public function testRelative()
@@ -677,9 +690,9 @@ class PathTest extends PHPUnit
 
         $paths = $path->relGlob('root:src/*.php');
 
-        isSame($this->_clearPaths(array(
+        $this->_is(array(
             'src/Exception.php',
             'src/Path.php',
-        )), $paths);
+        ), $paths);
     }
 }

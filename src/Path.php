@@ -124,7 +124,8 @@ class Path
             throw new Exception(sprintf('The minimum number of characters is %s', Path::MIN_ALIAS_LENGTH));
         }
 
-        $alias = preg_replace('/[^A-Z0-9_\.-]/i', '', $alias);
+        $alias = $this->_cleanAlias($alias);
+
         if ($this->_reset($paths, $alias, $mode)) {
             return;
         }
@@ -240,6 +241,7 @@ class Path
         $parts = explode(':', $path, 2);
 
         list($alias) = $parts;
+        $alias = $this->_cleanAlias($alias);
         if ($this->prefix($path) !== null && !array_key_exists($alias, $this->_paths)) {
             return false;
         }
@@ -312,9 +314,10 @@ class Path
     public function url($source, $full = true)
     {
         $details = explode('?', $source);
-        $path    = $details[0];
-        $path    = $this->_getAddPath($path, '/');
-        $path    = $this->_getUrlPath($path, true);
+
+        $path = $details[0];
+        $path = $this->_getAddPath($path, '/');
+        $path = $this->_getUrlPath($path, true);
 
         if (!empty($path)) {
             if (isset($details[1])) {
@@ -454,10 +457,10 @@ class Path
     {
         $this->_checkRoot();
 
-        $root    = preg_quote($this->_root, '/');
-        $path    = $this->_getAddPath($path, '/');
+        $path = $this->_getAddPath($path, '/');
+
         $subject = $path;
-        $pattern = '/^' . $root . '/i';
+        $pattern = '/^' . preg_quote($this->_root, '/') . '/i';
 
         if ($exitsFile && !$this->isVirtual($path) && !file_exists($path)) {
             $subject = null;
@@ -506,6 +509,7 @@ class Path
         list($alias, $path) = explode(':', $source, 2);
 
         $path  = ltrim($path, "\\/");
+        $alias = $this->_cleanAlias($alias);
         $paths = isset($this->_paths[$alias]) ? $this->_paths[$alias] : array();
 
         return array($alias, $paths, $path);
@@ -532,4 +536,16 @@ class Path
 
         return false;
     }
+
+    /**
+     * @param $alias
+     * @return mixed|string
+     */
+    protected function _cleanAlias($alias)
+    {
+        $alias = strtolower($alias);
+        $alias = preg_replace('/[^a-z0-9_\.-]/', '', $alias);
+        return $alias;
+    }
+
 }
