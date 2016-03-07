@@ -71,7 +71,7 @@ class PerformanceTest extends PHPUnit
 
                 return $result;
             },
-        ), array('count' => 500, 'name' => 'Path lib'));
+        ), array('count' => 500, 'name' => 'Compare with realpath'));
     }
 
     public function testPathResolver()
@@ -79,8 +79,11 @@ class PerformanceTest extends PHPUnit
         $fs   = new Filesystem();
         $root = $this->_root . '/';
 
+        $virtPath = new Path();
+        $virtPath->set('default', $root);
+
         runBench(array(
-            'new path'  => function () use ($fs, $root) {
+            'new path (new)'  => function () use ($fs, $root) {
 
                 $newDir = $root . mt_rand();
                 $fs->mkdir($newDir);
@@ -95,13 +98,17 @@ class PerformanceTest extends PHPUnit
 
                 return $result;
             },
-            'same path' => function () use ($fs, $root) {
+            'same path (new)' => function () use ($fs, $root) {
                 $virtPath = new Path();
                 $virtPath->set('default', $root);
                 $result = $virtPath->get('default:');
 
                 return $result;
             },
-        ), array('count' => 500, 'name' => 'Path lib'));
+            'same path' => function () use ($fs, $root, $virtPath) {
+                $result = $virtPath->get('default:');
+                return $result;
+            },
+        ), array('count' => 1000, 'name' => 'path resolver'));
     }
 }
