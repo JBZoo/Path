@@ -14,6 +14,7 @@
 
 namespace JBZoo\PHPUnit;
 
+use JBZoo\Utils\FS;
 use JBZoo\Path\Path;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -23,38 +24,81 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class PerformanceTest extends PHPUnit
 {
-    public function testBenchmark()
+    /**
+     * @var string
+     */
+    protected $_root;
+
+    public function setUp()
     {
-        $fs = new Filesystem();
+        $root = FS::clean(__DIR__ . '/test', '/');
+        FS::rmdir($root);
+
+        mkdir($root, 0777, true);
+        $this->_root = $root;
+    }
+
+    public function testCompareWithRealpath()
+    {
+        $fs   = new Filesystem();
+        $root = $this->_root . '/';
 
         runBench(array(
-            'JBZoo\Path' => function () use ($fs) {
+            'JBZoo\Path' => function () use ($fs, $root) {
 
-                $dirName = mt_rand();
-                $path    = __DIR__ . DS . $dirName;
-                $fs->mkdir($path);
+                $newDir = $root . mt_rand();
+                $fs->mkdir($newDir);
 
                 // start
                 $virtPath = new Path();
-                $virtPath->set('default', __DIR__ . DS . $dirName);
+                $virtPath->set('default', $newDir);
                 $result = $virtPath->get('default:');
-                unset($virtPath);
                 // end
 
                 $fs->remove($result);
 
                 return $result;
             },
-            'RealPath'   => function () use ($fs) {
-                $dirName = mt_rand();
-                $path    = __DIR__ . DS . $dirName;
-                $fs->mkdir($path);
+            'realpath()' => function () use ($fs, $root) {
+                $newDir = $root . mt_rand();
+                $fs->mkdir($newDir);
 
                 // start
-                $result = realpath($path);
+                $result = realpath($newDir);
                 // end
 
                 $fs->remove($result);
+
+                return $result;
+            },
+        ), array('count' => 500, 'name' => 'Path lib'));
+    }
+
+    public function testPathResolver()
+    {
+        $fs   = new Filesystem();
+        $root = $this->_root . '/';
+
+        runBench(array(
+            'new path'  => function () use ($fs, $root) {
+
+                $newDir = $root . mt_rand();
+                $fs->mkdir($newDir);
+
+                // start
+                $virtPath = new Path();
+                $virtPath->set('default', $newDir);
+                $result = $virtPath->get('default:');
+                // end
+
+                $fs->remove($result);
+
+                return $result;
+            },
+            'same path' => function () use ($fs, $root) {
+                $virtPath = new Path();
+                $virtPath->set('default', $root);
+                $result = $virtPath->get('default:');
 
                 return $result;
             },
