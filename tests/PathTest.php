@@ -506,7 +506,7 @@ class PathTest extends PHPUnit
 
         $fs->mkdir($dir);
         $path->setRoot($dir);
-        $this->_is($this->_root, $path->getRoot());
+        $this->_is($dir, $path->getRoot());
         $fs->remove($dir);
     }
 

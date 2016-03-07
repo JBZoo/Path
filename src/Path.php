@@ -311,9 +311,7 @@ class Path
             throw new Exception(sprintf('Not found directory: %s', $dir));
         }
 
-        if (!isset($this->_root)) {
-            $this->_root = $this->_clean($dir);
-        }
+        $this->_root = $this->_clean($dir);
     }
 
     /**
