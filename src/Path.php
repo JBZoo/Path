@@ -223,6 +223,7 @@ class Path
     {
         $source = $this->_cleanSource($source);
         list(, $paths) = $this->_parse($source);
+
         return $paths;
     }
 
@@ -284,9 +285,9 @@ class Path
 
         $return = false;
 
-        foreach ($paths as $path) {
+        foreach ($paths as $origPath) {
 
-            $path = $this->_cleanPath($path);
+            $path = $this->_cleanPath($this->_clean($origPath));
 
             $key = array_search($path, $this->_paths[$alias], true);
             if (false !== $key) {
@@ -524,8 +525,14 @@ class Path
 
         $result = array();
         foreach ($paths as $originalPath) {
-            if ($virtPath = $this->get($originalPath)) {
-                $path = $virtPath;
+            if ($this->isVirtual($originalPath)) {
+
+                if ($realPath = $this->get($originalPath)) {
+                    $path = $realPath;
+                } else {
+                    $path = $this->_cleanPath($originalPath);
+                }
+
             } else {
                 $path = $this->_cleanPath($originalPath);
             }
