@@ -53,13 +53,6 @@ class Path
     const MOD_RESET = 'reset';
 
     /**
-     * Pull of instance
-     *
-     * @var array
-     */
-    protected static $_objects = array();
-
-    /**
      * Holds paths list.
      *
      * @var array
@@ -72,6 +65,13 @@ class Path
      * @var string
      */
     protected $_root;
+
+    /**
+     * Pull of instances
+     *
+     * @var array
+     */
+    public static $_objects = array();
 
     /**
      * Get path instance.
@@ -99,7 +99,7 @@ class Path
      *
      * @return array
      */
-    public function getInstanceKeys()
+    public static function getInstanceKeys()
     {
         return array_keys(self::$_objects);
     }
@@ -119,25 +119,31 @@ class Path
     public function set($alias, $paths, $mode = Path::MOD_PREPEND)
     {
         $paths = (array)$paths;
+        $alias = $this->_cleanAlias($alias);
 
         if (strlen($alias) < Path::MIN_ALIAS_LENGTH) {
             throw new Exception(sprintf('The minimum number of characters is %s', Path::MIN_ALIAS_LENGTH));
         }
 
-        $alias = $this->_cleanAlias($alias);
-
-        if ($this->_reset($paths, $alias, $mode)) {
+        if ($mode === self::MOD_RESET) {
+            $this->_reset($paths, $alias);
             return;
         }
 
         foreach ($paths as $path) {
+
             if (!isset($this->_paths[$alias])) {
                 $this->_paths[$alias] = array();
             }
 
             $path = FS::clean($path, '/');
-            if (!in_array($path, $this->_paths[$alias], true)) {
-                $this->_add($path, $alias, $mode);
+            if ($path && !in_array($path, $this->_paths[$alias], true)) {
+
+                if (preg_match('/^' . preg_quote($alias . ':') . '/i', $path)) {
+                    throw new Exception(sprintf('Added looped path "%s" to key "%s"', print_r($path, true), $alias));
+                }
+
+                $this->_addNewPath($path, $alias, $mode);
             }
         }
     }
@@ -214,7 +220,8 @@ class Path
      */
     public function getPaths($source)
     {
-        list(, $paths) = $this->_parse($source . ':');
+        $source = $this->_cleanSource($source);
+        list(, $paths) = $this->_parse($source);
         return $paths;
     }
 
@@ -262,25 +269,28 @@ class Path
     }
 
     /**
-     * Remove path from registered paths.
+     * Remove path from registered paths for source
      *
-     * @param              $source (example: "default:file.txt")
-     * @param string|array $key
+     * @param string       $fromSource (example: "default:file.txt")
+     * @param string|array $paths
      * @return bool
      */
-    public function remove($source, $key)
+    public function remove($fromSource, $paths)
     {
-        $keys = (array)$key;
-        list($alias) = $this->_parse($source);
+        $paths      = (array)$paths;
+        $fromSource = $this->_cleanSource($fromSource);
+        list($alias) = $this->_parse($fromSource);
 
         $return = false;
-        if ($this->_isDeleted($alias, $keys)) {
-            foreach ($keys as $key) {
-                $key = (int)$key;
-                if (array_key_exists($key, $this->_paths[$alias])) {
-                    unset($this->_paths[$alias][$key]);
-                    $return = true;
-                }
+
+        foreach ($paths as $path) {
+
+            $path = $this->_cleanPath($path, '/');
+
+            $key = array_search($path, $this->_paths[$alias], true);
+            if (false !== $key) {
+                unset($this->_paths[$alias][$key]);
+                $return = true;
             }
         }
 
@@ -316,7 +326,7 @@ class Path
         $details = explode('?', $source);
 
         $path = $details[0];
-        $path = $this->_getAddPath($path, '/');
+        $path = $this->_cleanPath($path, '/');
         $path = $this->_getUrlPath($path, true);
 
         if (!empty($path)) {
@@ -367,9 +377,9 @@ class Path
      * @param string|bool  $mode
      * @return void
      */
-    protected function _add($path, $alias, $mode)
+    protected function _addNewPath($path, $alias, $mode)
     {
-        $path = $this->_getAddPath($path, '/');
+        $path = $this->_cleanPath($path, '/');
         if ($path !== null) {
             if ($mode == self::MOD_PREPEND) {
                 array_unshift($this->_paths[$alias], $path);
@@ -427,19 +437,19 @@ class Path
     /**
      * Get add path.
      *
-     * @param        $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
-     * @param        $path
+     * @param string $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
+     * @param string $path
      * @param string $dirSep
      * @return null|string
      */
-    protected function _getAddPath($path, $dirSep = DIRECTORY_SEPARATOR)
+    protected function _cleanPath($path, $dirSep = DIRECTORY_SEPARATOR)
     {
         if ($this->isVirtual($path)) {
-            return $this->get($path);
+            return FS::clean($path, $dirSep);
         }
 
         if ($this->_hasCDBack($path)) {
-            return (realpath($path)) ? realpath(FS::clean($path, '/')) : null;
+            return (realpath($path)) ? (FS::clean(realpath($path), $dirSep)) : null;
         }
 
         return FS::clean($path, $dirSep);
@@ -457,7 +467,10 @@ class Path
     {
         $this->_checkRoot();
 
-        $path = $this->_getAddPath($path, '/');
+        $path = $this->_cleanPath($path, '/');
+        if ($this->isVirtual($path)) {
+            $path = $this->get($path);
+        }
 
         $subject = $path;
         $pattern = '/^' . preg_quote($this->_root, '/') . '/i';
@@ -482,22 +495,6 @@ class Path
     }
 
     /**
-     * Checking the possibility of removing the path.
-     *
-     * @param string $alias
-     * @param array  $keys
-     * @return bool
-     */
-    protected function _isDeleted($alias, $keys)
-    {
-        if (isset($this->_paths[$alias]) && is_array($this->_paths[$alias]) && !empty($keys)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Parse source string.
      *
      * @param string $source (example: "default:file.txt")
@@ -509,32 +506,51 @@ class Path
         list($alias, $path) = explode(':', $source, 2);
 
         $path  = ltrim($path, "\\/");
-        $alias = $this->_cleanAlias($alias);
-        $paths = isset($this->_paths[$alias]) ? $this->_paths[$alias] : array();
+        $paths = $this->_resolvePaths($alias);
 
         return array($alias, $paths, $path);
     }
 
     /**
-     * Reset added paths.
-     *
-     * @param array $paths (example: "default:file.txt" or "C:/Server/public_html/index.php")
-     * @param       $alias
-     * @param       $mode
-     * @return bool
+     * @param string $alias
+     * @return array
      */
-    protected function _reset($paths, $alias, $mode)
+    protected function _resolvePaths($alias)
     {
-        if ($mode === self::MOD_RESET) {
-            $this->_paths[$alias] = array();
-            foreach ($paths as $path) {
-                $this->_paths[$alias][] = FS::clean($path, '/');
+        $alias = $this->_cleanAlias($alias);
+
+        $paths = isset($this->_paths[$alias]) ? $this->_paths[$alias] : array();
+
+        $result = array();
+        foreach ($paths as $originalPath) {
+            if ($virtPath = $this->get($originalPath)) {
+                $path = $virtPath;
+            } else {
+                $path = $this->_cleanPath($originalPath);
             }
 
-            return true;
+            $result[] = realpath($path);
         }
 
-        return false;
+        $result = array_filter($result); // remove empty
+        $result = array_values($result); // reset keys
+
+        return $result;
+    }
+
+    /**
+     * Reset added paths.
+     *
+     * @param array  $paths (example: "default:file.txt" or "C:/Server/public_html/index.php")
+     * @param string $alias
+     * @return bool
+     */
+    protected function _reset($paths, $alias)
+    {
+        $this->_paths[$alias] = array();
+        foreach ($paths as $path) {
+            $this->_paths[$alias][] = FS::clean($path, '/');
+        }
     }
 
     /**
@@ -548,4 +564,15 @@ class Path
         return $alias;
     }
 
+    /**
+     * @param string $source
+     * @return mixed|string
+     */
+    protected function _cleanSource($source)
+    {
+        $source = $this->_cleanAlias($source);
+        $source .= ':';
+
+        return $source;
+    }
 }

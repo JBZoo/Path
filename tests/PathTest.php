@@ -164,63 +164,102 @@ class PathTest extends PHPUnit
         $fs->remove(array($defaultDir, $importDir, $exportDir));
     }
 
+    /**
+     * @expectedException \JBZoo\Path\Exception
+     */
+    public function testAddLoopedPath()
+    {
+        $path = Path::getInstance(__METHOD__);
+        $path->set('default', 'default:');
+    }
+
+    public function testResolveAnyPaths()
+    {
+        $path = Path::getInstance(__METHOD__);
+
+        $paths = array(
+            // Normal
+            $this->_root,
+            $this->_root . '/..',
+            $this->_root . '/../..',
+
+            // Virt paths
+            'root:',
+            'root:..',
+            'root:../..',
+            'root:/../..',
+            'root:/../test',
+
+            // Undefined
+            $this->_root . '/' . mt_rand(),
+            'root:test',
+            'root:undefined',
+            'undefined:',
+            'undefined:undefined',
+        );
+
+        $path->set('default', $paths, Path::MOD_APPEND);
+        $path->set('root', $this->_root);
+
+        $expected = array(
+            realpath($this->_root),
+            realpath($this->_root . '/..'),
+            realpath($this->_root . '/../..'),
+            realpath($this->_root),
+            realpath($this->_root . '/..'),
+            realpath($this->_root . '/../..'),
+            realpath($this->_root . '/../test'),
+        );
+
+        $this->_is($expected, $path->getPaths('default'));
+    }
+
     public function testSetAppend()
     {
         $path = Path::getInstance(__METHOD__);
 
-        $name  = mt_rand();
         $paths = array(
             $this->_root,
-            $this->_root . DS . $name,
-            $this->_root . DS . $name,
+            $this->_root . '/..',
         );
 
-        $path->set('default', $paths);
+        $appendPath = $this->_root . '/../..';
 
-        $paths2 = array(
-            $this->_root,
-            $this->_root . DS . $name,
-        );
-        $path->set('test', $paths2);
+        $path->set('default', $paths, Path::MOD_APPEND);
+        $path->set('default', $appendPath, Path::MOD_APPEND);
 
         $expected = array(
-            $this->_root . DS . $name,
-            $this->_root,
+            realpath($this->_root),
+            realpath($this->_root . '/..'),
+            realpath($this->_root . '/../..'),
         );
 
-        $defaultPaths = $path->getPaths('default:');
-        $testPaths    = $path->getPaths('test:');
-
-        $this->_is($expected, $testPaths);
-        $this->_is($expected, $defaultPaths);
+        $this->_is($expected, $path->getPaths('default'));
+        $this->_is($expected, $path->getPaths('default:'));
     }
 
     public function testSetPrepend()
     {
-        $name1 = mt_rand();
-        $name2 = mt_rand();
+        $path = Path::getInstance(__METHOD__);
 
-        $path  = Path::getInstance(__METHOD__);
         $paths = array(
-            $this->_root . DS . $name1,
             $this->_root,
+            $this->_root . '/..',
         );
 
-        $appendPath = $this->_root . DS . $name2;
+        $appendPath = $this->_root . '/../..';
 
         $path->set('default', $paths);
-        $path->set('default', $appendPath, Path::MOD_APPEND);
-
-        array_push($paths, $appendPath);
+        $path->set('default', $appendPath, Path::MOD_PREPEND);
 
         $expected = array(
-            $this->_root,
-            $this->_root . DS . $name1,
-            $appendPath,
+            realpath($appendPath),
+            realpath($this->_root . '/..'),
+            realpath($this->_root),
         );
 
-        $package = $path->getPaths('default:');
-        $this->_is($expected, $package);
+        $this->_is($expected, $path->getPaths('default'));
+        $this->_is($expected, $path->getPaths('default:'));
     }
 
     public function testSetVirtual()
@@ -228,24 +267,23 @@ class PathTest extends PHPUnit
         $path = Path::getInstance(__METHOD__);
         $fs   = new Filesystem();
 
-        $path->set('default', 'default:folder');
-        isSame(array(), $path->getPaths('default:'));
+        $path->set('default', 'undefined:folder');
+        isSame(array(), $path->getPaths('default'));
 
         $path->set('default', 'alias:folder');
-        isSame(array(), $path->getPaths('alias:'));
+        isSame(array(), $path->getPaths('alias'));
 
         $path->set('default', $this->_root);
-        $this->_is($this->_root, $path->getPaths('default:'));
+        $this->_is($this->_root, $path->getPaths('default'));
 
-        $path->set('default', 'default:virtual-folder');
-        $this->_is($this->_root, $path->getPaths('default:'));
+        $path->set('default', 'undefined:virtual-folder');
+        $this->_is($this->_root, $path->getPaths('default'));
 
         $newFolder = $this->_root . DS . 'virtual-folder';
         $fs->mkdir($newFolder);
 
-        $path->set('default', 'default:virtual-folder');
+        $path->set('default', 'undefined:virtual-folder');
         $this->_is(array(
-            $this->_root . DS . 'virtual-folder',
             $this->_root,
         ), $path->getPaths('default:'));
 
@@ -256,15 +294,12 @@ class PathTest extends PHPUnit
     {
         $path = Path::getInstance(__METHOD__);
 
-        $name    = mt_rand();
-        $newPath = array(
-            $this->_root . DS . $name,
-        );
+        $newPath = $this->_root . '/..';
 
-        $path->set('default', $this->_root . DS . $name . DS . 'simple');
+        $path->set('default', $this->_root . '/../..');
         $path->set('default', $newPath, Path::MOD_RESET);
 
-        $this->_is($newPath, $path->getPaths('default'));
+        $this->_is(realpath($newPath), $path->getPaths('default'));
     }
 
     /**
@@ -381,69 +416,31 @@ class PathTest extends PHPUnit
 
         $path->set('default', $paths);
 
-        isSame($path->clean($f1), $path->get('default:text.txt'));
-        isSame($path->clean($f2), $path->get('default:file.pot'));
+        $this->_is($f1, $path->get('default:text.txt'));
+        $this->_is($f2, $path->get('default:file.pot'));
 
-        isSame($path->clean($dir2 . DS . 'style.less'), $path->get('default:/style.less'));
-        isSame($path->clean($dir2 . DS . 'style.less'), $path->get('default:\style.less'));
-        isSame($path->clean($dir2 . DS . 'style.less'), $path->get('default:\/style.less'));
-        isSame($path->clean($dir2 . DS . 'style.less'), $path->get('default:\\\style.less'));
-        isSame($path->clean($dir2 . DS . 'style.less'), $path->get('default:///style.less'));
+        $this->_is($dir2 . DS . 'style.less', $path->get('default:/style.less'));
+        $this->_is($dir2 . DS . 'style.less', $path->get('default:\style.less'));
+        $this->_is($dir2 . DS . 'style.less', $path->get('default:\/style.less'));
+        $this->_is($dir2 . DS . 'style.less', $path->get('default:\\\style.less'));
+        $this->_is($dir2 . DS . 'style.less', $path->get('default:///style.less'));
 
-        isSame($path->clean($f5), $path->get('default:simple/file.txt'));
-        isSame($path->clean($f5), $path->get('default:simple\file.txt'));
-        isSame($path->clean($f5), $path->get('default:simple\\\\file.txt'));
-        isSame($path->clean($f5), $path->get('default:simple////file.txt'));
-        isSame($path->clean($f5), $path->get('default:simple' . DS . 'file.txt'));
-        isSame($path->clean($f5), $path->get('default:\\simple' . DS . 'file.txt'));
-        isSame($path->clean($f5), $path->get('default:\/simple' . DS . 'file.txt'));
+        $this->_is($f5, $path->get('default:simple/file.txt'));
+        $this->_is($f5, $path->get('default:simple\file.txt'));
+        $this->_is($f5, $path->get('default:simple\\\\file.txt'));
+        $this->_is($f5, $path->get('default:simple////file.txt'));
+        $this->_is($f5, $path->get('default:simple' . DS . 'file.txt'));
+        $this->_is($f5, $path->get('default:\\simple' . DS . 'file.txt'));
+        $this->_is($f5, $path->get('default:\/simple' . DS . 'file.txt'));
+
         isNull($path->get('alias:/simple' . DS . 'file.txt'));
 
-        isSame(
-            $path->clean($symLink . DS . 'test-symlink.txt'),
+        $this->_is(
+            $symLink . DS . 'test-symlink.txt',
             $path->get('default:symlink/folder/test-symlink.txt')
         );
 
         $fs->remove($dir1);
-    }
-
-    public function testCheckRemovePaths()
-    {
-        $path = Path::getInstance(__METHOD__);
-
-        $path->set('default', array(
-            $this->_root,
-            $this->_root . DS . 'folder',
-            $this->_root . DS . 'folder-2',
-            $this->_root . DS . 'folder-3',
-            $this->_root . DS . 'folder-4',
-            $this->_root . DS . 'folder-5',
-            $this->_root . DS . 'folder-6',
-        ));
-
-        $path->remove('default:', array(1, 3, 5));
-        $this->_is(array(
-            0 => $this->_root . DS . 'folder-6',
-            2 => $this->_root . DS . 'folder-4',
-            4 => $this->_root . DS . 'folder-2',
-            6 => $this->_root,
-        ), $path->getPaths('default'));
-
-        $path->remove('default:', 0);
-        $this->_is(array(
-            2 => $this->_root . DS . 'folder-4',
-            4 => $this->_root . DS . 'folder-2',
-            6 => $this->_root,
-        ), $path->getPaths('default'));
-
-        $path->remove('default:', '2');
-        $this->_is(array(
-            4 => $this->_root . DS . 'folder-2',
-            6 => $this->_root,
-        ), $path->getPaths('default'));
-
-        $path->remove('default:', array(4, '6'));
-        isEmpty($path->getPaths('default'));
     }
 
     public function testRemove()
@@ -452,20 +449,32 @@ class PathTest extends PHPUnit
 
         $path->set('default', array(
             $this->_root,
-            $this->_root . DS . 'folder',
-            $this->_root . DS . 'folder-2',
-            $this->_root . DS . 'folder-3',
-            $this->_root . DS . 'folder-4',
-        ));
+            $this->_root . '/..',
+            $this->_root . '/../..',
+        ), Path::MOD_PREPEND);
 
-        isTrue($path->remove('default:', 1));
-        isTrue($path->remove('default:', '3'));
-        isTrue($path->remove('default:', array(4.0)));
-        isTrue($path->remove('default:', array(0, '2')));
-        isFalse($path->remove('default:', array(2)));
+        isTrue($path->remove('default', $this->_root));
 
-        isFalse($path->remove('alias:', array(2)));
-        isFalse($path->remove('alias:', array('5', 10, '123')));
+        $this->_is(array(
+            realpath($this->_root . '/../..'),
+            realpath($this->_root . '/..'),
+        ), $path->getPaths('default'));
+
+        isFalse($path->remove('default', realpath($this->_root . '/../../src')));
+        isFalse($path->remove('default', $this->_root . '/../../src'));
+
+        $this->_is(array(
+            realpath($this->_root . '/../..'),
+            realpath($this->_root . '/..'),
+        ), $path->getPaths('default'));
+
+        $removedPaths = array(
+            $this->_root . '\\..\\..',
+            $this->_root . '////..',
+        );
+        isTrue($path->remove('default', $removedPaths));
+
+        $this->_is(array(), $path->getPaths('default'));
     }
 
     /**
@@ -493,11 +502,11 @@ class PathTest extends PHPUnit
         $dir  = $this->_root . DS . mt_rand();
 
         $path->setRoot($this->_root);
-        isSame($this->_root, $path->getRoot());
+        $this->_is($this->_root, $path->getRoot());
 
         $fs->mkdir($dir);
         $path->setRoot($dir);
-        isSame($this->_root, $path->getRoot());
+        $this->_is($this->_root, $path->getRoot());
         $fs->remove($dir);
     }
 
@@ -536,7 +545,7 @@ class PathTest extends PHPUnit
         $path->setRoot($this->_root);
         $path->set('default', $dir);
 
-        isSame('/short/file.txt', $path->url('default:file.txt', false));
+        $this->_is('/short/file.txt', $path->url('default:file.txt', false));
 
         $fs->remove($dir);
     }
@@ -574,19 +583,19 @@ class PathTest extends PHPUnit
         $file2 = $current . 'my-folder/file0.txt';
         $file3 = $current . 'my-folder2/my-file.txt';
 
-        isSame($file1, $path->url('default:file1.txt'));
-        isSame($file3, $path->url('default:my-folder2/my-file.txt'));
-        isSame($file3, $path->url('default:my-folder2\\\\my-file.txt'));
-        isSame($file3, $path->url('default:\my-folder2\my-file.txt'));
+        $this->_is($file1, $path->url('default:file1.txt'));
+        $this->_is($file3, $path->url('default:my-folder2/my-file.txt'));
+        $this->_is($file3, $path->url('default:my-folder2\\\\my-file.txt'));
+        $this->_is($file3, $path->url('default:\my-folder2\my-file.txt'));
 
-        isSame($file1, $path->url($path2 . DS . 'file1.txt'));
-        isSame($file2, $path->url($path1 . DS . 'file0.txt'));
-        isSame($file2, $path->url($path1 . '/file0.txt'));
-        isSame($file3, $path->url($this->_root . '\my-folder2\my-file.txt'));
-        isSame($file3, $path->url($this->_root . '/my-folder2////my-file.txt'));
-        isSame($file3, $path->url($this->_root . DS . 'my-folder2' . DS . 'my-file.txt'));
+        $this->_is($file1, $path->url($path2 . DS . 'file1.txt'));
+        $this->_is($file2, $path->url($path1 . DS . 'file0.txt'));
+        $this->_is($file2, $path->url($path1 . '/file0.txt'));
+        $this->_is($file3, $path->url($this->_root . '\my-folder2\my-file.txt'));
+        $this->_is($file3, $path->url($this->_root . '/my-folder2////my-file.txt'));
+        $this->_is($file3, $path->url($this->_root . DS . 'my-folder2' . DS . 'my-file.txt'));
 
-        isSame($file2 . '?data=test&value=hello', $path->url($path1 . DS . 'file0.txt?data=test&value=hello'));
+        $this->_is($file2 . '?data=test&value=hello', $path->url($path1 . DS . 'file0.txt?data=test&value=hello'));
 
         isNull($path->url('default:file.txt'));
         isNull($path->url('alias:file.txt'));
@@ -619,38 +628,33 @@ class PathTest extends PHPUnit
             FS::clean($path1, '/'),
         );
 
-        isSame($expected, $path->getPaths('default:'));
+        $this->_is($expected, $path->getPaths('default'));
     }
 
     public function testDeprecated_add()
     {
         $path = Path::getInstance(__METHOD__);
 
-        $name  = mt_rand();
         $paths = array(
             $this->_root,
-            $this->_root . DS . $name,
-            $this->_root . DS . $name,
+            $this->_root . '/..',
         );
 
-        $path->add($paths, 'default');
+        $path->add($paths, 'default', Path::MOD_PREPEND);
 
         $paths2 = array(
+            $this->_root . '/..',
             $this->_root,
-            $this->_root . DS . $name,
         );
-        $path->add($paths2, 'test');
+        $path->add($paths2, 'test', Path::MOD_APPEND);
 
         $expected = array(
-            $this->_root . DS . $name,
+            realpath($this->_root . '/..'),
             $this->_root,
         );
 
-        $defaultPaths = $path->getPaths('default:');
-        $testPaths    = $path->getPaths('test:');
-
-        $this->_is($expected, $testPaths);
-        $this->_is($expected, $defaultPaths);
+        $this->_is($expected, $path->getPaths('default:'));
+        $this->_is($expected, $path->getPaths('test:'));
     }
 
     public function testGlob()
@@ -677,7 +681,7 @@ class PathTest extends PHPUnit
         $path->set('src', 'root:src');
 
         $actual = $path->rel('root:src/Path.php');
-        isSame('src/Path.php', $actual);
+        $this->_is('src/Path.php', $actual);
     }
 
     public function testRelativeGlob()
