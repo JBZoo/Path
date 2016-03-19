@@ -55,15 +55,6 @@ $path->url('less:path/to/styles.less')  //  http://my-site.com/styles/css/folder
 
 echo '<link rel="stylesheet" href="' . $path->url('css:styles.css') . '">';
 
-/**
- * Need remove added path?
- * Second parameter is the key of the paths array.
- */
-$path->remove('less:', array(1));
-
-//  or use string
-$path->remove('less:', 1);
-
 //  Clean path.
 $path->clean('C:\server/folder\\\file.txt'); // result: 'C:/server/folder/file.txt'
 $path->clean('path\\to//simple\\folder')    //  result: 'path/to/simple/folder'
