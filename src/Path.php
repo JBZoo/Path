@@ -16,6 +16,7 @@
 namespace JBZoo\Path;
 
 use JBZoo\Utils\FS;
+use JBZoo\Utils\Sys;
 use JBZoo\Utils\Url;
 
 /**
@@ -95,6 +96,16 @@ class Path
     }
 
     /**
+     * Path constructor.
+     * @param string $root
+     */
+    public function __construct($root = null)
+    {
+        $root = $root ?: Sys::getDocRoot();
+        $this->setRoot($root);
+    }
+
+    /**
      * Get instance keys.
      *
      * @return array
@@ -123,6 +134,10 @@ class Path
 
         if (strlen($alias) < Path::MIN_ALIAS_LENGTH) {
             throw new Exception(sprintf('The minimum number of characters is %s', Path::MIN_ALIAS_LENGTH));
+        }
+
+        if ($alias === 'root') {
+            throw new Exception('Alias "root" is predefined');
         }
 
         if ($mode === self::MOD_RESET) { // Reset mode
@@ -517,6 +532,10 @@ class Path
      */
     protected function _resolvePaths($alias)
     {
+        if ($alias === 'root') {
+            return array($this->getRoot());
+        }
+
         $alias = $this->_cleanAlias($alias);
 
         $paths = isset($this->_paths[$alias]) ? $this->_paths[$alias] : array();

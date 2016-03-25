@@ -17,6 +17,7 @@ namespace JBZoo\PHPUnit;
 
 use JBZoo\Path\Path;
 use JBZoo\Utils\FS;
+use JBZoo\Utils\Sys;
 use JBZoo\Utils\Url;
 use JBZoo\Path\Exception;
 use Symfony\Component\Filesystem\Filesystem;
@@ -173,6 +174,15 @@ class PathTest extends PHPUnit
         $path->set('default', 'default:');
     }
 
+    /**
+     * @expectedException \JBZoo\Path\Exception
+     */
+    public function testSetRootAlias()
+    {
+        $path = new Path();
+        $path->set('root', $this->_root);
+    }
+
     public function testResolveAnyPaths()
     {
         $path = Path::getInstance(__METHOD__);
@@ -184,22 +194,22 @@ class PathTest extends PHPUnit
             $this->_root . '/../..',
 
             // Virt paths
-            'root:',
-            'root:..',
-            'root:../..',
-            'root:/../..',
-            'root:/../test',
+            'somepath:',
+            'somepath:..',
+            'somepath:../..',
+            'somepath:/../..',
+            'somepath:/../test',
 
             // Undefined
             $this->_root . '/' . mt_rand(),
-            'root:test',
-            'root:undefined',
+            'somepath:test',
+            'somepath:undefined',
             'undefined:',
             'undefined:undefined',
         );
 
         $path->set('default', $paths, Path::MOD_APPEND);
-        $path->set('root', $this->_root);
+        $path->set('somepath', $this->_root);
 
         $expected = array(
             realpath($this->_root),
@@ -486,15 +496,6 @@ class PathTest extends PHPUnit
         $path->setRoot($this->_root . DS . mt_rand());
     }
 
-    /**
-     * @expectedException \JBZoo\Path\Exception
-     */
-    public function testGetRootFailed()
-    {
-        $path = Path::getInstance(__METHOD__);
-        $path->getRoot();
-    }
-
     public function testSetRoot()
     {
         $path = Path::getInstance(__METHOD__);
@@ -508,26 +509,6 @@ class PathTest extends PHPUnit
         $path->setRoot($dir);
         $this->_is($dir, $path->getRoot());
         $fs->remove($dir);
-    }
-
-    /**
-     * @expectedException \JBZoo\Path\Exception
-     */
-    public function testNotSetRoot()
-    {
-        $path = Path::getInstance(__METHOD__);
-        $path->set('default', $this->_paths);
-        $path->url(__DIR__);
-    }
-
-    /**
-     * @expectedException \JBZoo\Path\Exception
-     */
-    public function testNotSetRootVirtual()
-    {
-        $path = Path::getInstance(__METHOD__);
-        $path->set('default', $this->_paths);
-        $path->url('default:file.txt');
     }
 
     public function testShortUrl()
@@ -661,10 +642,10 @@ class PathTest extends PHPUnit
     {
         $path = new Path();
 
-        $path->set('root', __DIR__ . '/..');
-        $path->set('src', 'root:src');
+        $path->set('somepath', __DIR__ . '/..');
+        $path->set('src', 'somepath:src');
 
-        $paths = $path->glob('root:src/*.php');
+        $paths = $path->glob('somepath:src/*.php');
 
         $this->_is(array(
             PROJECT_ROOT . '/src/Exception.php',
@@ -677,10 +658,10 @@ class PathTest extends PHPUnit
         $path = new Path();
 
         $path->setRoot(__DIR__ . '/..');
-        $path->set('root', __DIR__ . '/..');
-        $path->set('src', 'root:src');
+        $path->set('somepath', __DIR__ . '/..');
+        $path->set('src', 'somepath:src');
 
-        $actual = $path->rel('root:src/Path.php');
+        $actual = $path->rel('somepath:src/Path.php');
         $this->_is('src/Path.php', $actual);
     }
 
@@ -689,14 +670,43 @@ class PathTest extends PHPUnit
         $path = new Path();
 
         $path->setRoot(__DIR__ . '/..');
-        $path->set('root', __DIR__ . '/..');
-        $path->set('src', 'root:src');
+        $path->set('somepath', __DIR__ . '/..');
+        $path->set('src', 'somepath:src');
 
-        $paths = $path->relGlob('root:src/*.php');
+        $paths = $path->relGlob('somepath:src/*.php');
 
         $this->_is(array(
             'src/Exception.php',
             'src/Path.php',
         ), $paths);
+    }
+
+    public function testPredefinedRoot()
+    {
+        $_SERVER['HTTP_HOST']   = 'test.dev';
+        $_SERVER['SERVER_PORT'] = 80;
+        $_SERVER['REQUEST_URI'] = '/page';
+
+        // defult
+        $sysRoot = Sys::getDocRoot();
+        $path    = new Path();
+        $this->_is($sysRoot, $path->getRoot());
+
+        // custom
+        $path = new Path(PROJECT_ROOT);
+        $this->_is(PROJECT_ROOT, $path->getRoot());
+        $this->_is(PROJECT_ROOT, $path->get('root:'));
+        $this->_is(PROJECT_SRC, $path->get('root:src'));
+        isSame('src', $path->rel('root:src'));
+        isSame('/src', $path->url('root:src', false));
+        isSame('http://test.dev/src', $path->url('root:src', true));
+    }
+
+    public function testRootPreDefinedAlias()
+    {
+        $path    = new Path(__DIR__);
+        $curFile = basename(__FILE__);
+
+        $this->_is(__FILE__, $path->get('root:' . $curFile));
     }
 }
