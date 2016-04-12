@@ -147,14 +147,12 @@ class Path
         }
 
         foreach ($paths as $path) {
-
             if (!isset($this->_paths[$alias])) {
                 $this->_paths[$alias] = array();
             }
 
             $path = $this->_clean($path);
             if ($path && !in_array($path, $this->_paths[$alias], true)) {
-
                 if (preg_match('/^' . preg_quote($alias . ':') . '/i', $path)) {
                     throw new Exception(sprintf('Added looped path "%s" to key "%s"', $path, $alias));
                 }
@@ -301,7 +299,6 @@ class Path
         $return = false;
 
         foreach ($paths as $origPath) {
-
             $path = $this->_cleanPath($this->_clean($origPath));
 
             $key = array_search($path, $this->_paths[$alias], true);
@@ -395,7 +392,6 @@ class Path
     protected function _addNewPath($path, $alias, $mode)
     {
         if ($cleanPath = $this->_cleanPath($path)) {
-
             if ($mode == self::MOD_PREPEND) {
                 array_unshift($this->_paths[$alias], $cleanPath);
             }
@@ -432,11 +428,10 @@ class Path
         $file  = ltrim($file, "\\/");
 
         foreach ($paths as $path) {
-
             $fullPath = $this->clean($path . '/' . $file);
 
             if ($isGlob) {
-                $paths = glob($fullPath);
+                $paths = glob($fullPath, GLOB_BRACE);
                 $paths = array_filter((array)$paths);
                 return $paths ?: array();
 
@@ -543,7 +538,6 @@ class Path
         $result = array();
         foreach ($paths as $originalPath) {
             if ($this->isVirtual($originalPath)) {
-
                 if ($realPath = $this->get($originalPath)) {
                     $path = $realPath;
                 } else {
