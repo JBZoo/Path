@@ -10,6 +10,11 @@
             "name"  : "Sergey Kalistratov",
             "email" : "kalistratov.s.m@gmail.com",
             "role"  : "developers"
+        },
+        {
+            "name"  : "SmetDenis",
+            "email" : "denis@jbzoo.com",
+            "role"  : "lead"
         }
     ],
     "require"           : {
