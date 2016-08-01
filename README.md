@@ -59,3 +59,15 @@ echo '<link rel="stylesheet" href="' . $path->url('css:styles.css') . '">';
 $path->clean('C:\server/folder\\\file.txt'); // result: 'C:/server/folder/file.txt'
 $path->clean('path\\to//simple\\folder')    //  result: 'path/to/simple/folder'
 ```
+
+
+## Unit tests and check code style
+```sh
+make
+make test-all
+```
+
+
+## License
+
+MIT
