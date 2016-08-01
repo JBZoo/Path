@@ -3,14 +3,7 @@
     "type"              : "library",
     "description"       : "PHP virtual path library",
     "license"           : "MIT",
-    "keywords"          : [
-        "url",
-        "jbzoo",
-        "path",
-        "realpath",
-        "filesystem",
-        "virtual path"
-    ],
+    "keywords"          : ["url", "jbzoo", "path", "realpath", "filesystem", "virtual path"],
     "minimum-stability" : "stable",
     "authors"           : [
         {
@@ -24,8 +17,9 @@
         "jbzoo/utils" : "^1.6"
     },
     "require-dev"       : {
-        "jbzoo/phpunit"      : "1.x-dev",
-        "symfony/filesystem" : "^2.8"
+        "jbzoo/phpunit"      : "^1.7|1.x-dev",
+        "symfony/filesystem" : "^2.8",
+        "jbzoo/profiler"     : "^1.0"
     },
     "autoload"          : {
         "psr-4" : {
@@ -36,30 +30,6 @@
         "branch-alias" : {
             "dev-master" : "1.x-dev"
         }
-    },
-    "scripts"           : {
-        "test"       : [
-            "@manifest",
-            "@autoload",
-            "@phpunit",
-            "@phpmd",
-            "@phpcs",
-            "@phpcpd",
-            "@phploc"
-        ],
-        "update-all" : [
-            "composer self-update --no-interaction",
-            "composer update --optimize-autoloader --prefer-source --no-interaction"
-        ],
-        "git-reset"  : "git reset --hard",
-        "manifest"   : "composer validate --no-interaction",
-        "autoload"   : "composer dump-autoload --optimize --no-interaction",
-        "phpunit"    : "php ./vendor/phpunit/phpunit/phpunit --configuration ./phpunit.xml.dist",
-        "phpmd"      : "php ./vendor/phpmd/phpmd/src/bin/phpmd ./src text ./vendor/jbzoo/misc/phpmd/jbzoo.xml --verbose",
-        "phpcs"      : "php ./vendor/squizlabs/php_codesniffer/scripts/phpcs ./src --standard=./vendor/jbzoo/misc/phpcs/JBZoo/ruleset.xml --report=full",
-        "phpcpd"     : "php ./vendor/sebastian/phpcpd/phpcpd ./src --verbose",
-        "phploc"     : "php ./vendor/phploc/phploc/phploc ./src --verbose",
-        "coveralls"  : "php ./vendor/satooshi/php-coveralls/bin/coveralls --verbose"
     },
     "support"           : {
         "issues" : "https://github.com/JBZoo/Path/issues"
