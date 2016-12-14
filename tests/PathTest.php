@@ -74,6 +74,13 @@ class PathTest extends PHPUnit
         );
     }
 
+    public function tearDown()
+    {
+        parent::tearDown();
+        $fs = new Filesystem();
+        $fs->remove($this->_root);
+    }
+
     /**
      * @expectedException \JBZoo\Path\Exception
      */
@@ -708,5 +715,31 @@ class PathTest extends PHPUnit
         $curFile = basename(__FILE__);
 
         $this->_is(__FILE__, $path->get('root:' . $curFile));
+    }
+    
+    public function testPathByFlagIsReal()
+    {
+        $path = new Path(PROJECT_ROOT);
+
+        $name       = mt_rand();
+        $symOrigDir = $this->_root . DS . $name;
+        $symLink    = __DIR__ . '/link/';
+
+        $fs = new Filesystem();
+        $fs->mkdir($symOrigDir);
+
+        $fs->dumpFile($symOrigDir . DS . 'file-1.txt', '');
+        $fs->dumpFile($symLink . DS . 'file-2.txt', '');
+
+        $fs->symlink($symLink, $symOrigDir . '/link', true);
+
+        $path->set('by-flag', [$symLink, $symOrigDir]);
+
+        isNotNull($path->get('by-flag:file-2.txt'));
+
+        $path->isReal = false;
+        isNotNull($path->get('by-flag:file-2.txt'));
+
+        $fs->remove(array($symOrigDir, $symLink));
     }
 }
