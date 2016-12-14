@@ -733,7 +733,7 @@ class PathTest extends PHPUnit
 
         $fs->symlink($symLink, $symOrigDir . '/link', true);
 
-        $path->set('by-flag', [$symLink, $symOrigDir]);
+        $path->set('by-flag', array($symLink, $symOrigDir));
 
         isNotNull($path->get('by-flag:file-2.txt'));
 
