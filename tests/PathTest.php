@@ -737,7 +737,7 @@ class PathTest extends PHPUnit
 
         isNotNull($path->get('by-flag:file-2.txt'));
 
-        $path->isReal = false;
+        $path->setRealPathFlag(false);
         isNotNull($path->get('by-flag:file-2.txt'));
 
         $fs->remove(array($symOrigDir, $symLink));

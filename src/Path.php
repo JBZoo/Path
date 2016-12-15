@@ -58,7 +58,7 @@ class Path
      *
      * @var string
      */
-    public $isReal = true;
+    protected $_isReal = true;
 
     /**
      * Holds paths list.
@@ -257,6 +257,17 @@ class Path
     {
         $this->_checkRoot();
         return $this->_root;
+    }
+
+    /**
+     * Setup real or relative path flag.
+     *
+     * @param bool $isReal
+     * @return void
+     */
+    public function setRealPathFlag($isReal = true)
+    {
+        $this->_isReal = (bool) $isReal;
     }
 
     /**
@@ -572,7 +583,7 @@ class Path
      */
     protected function _getCurrentPath($path)
     {
-        return ($this->isReal) ? realpath($path) : $path;
+        return ($this->_isReal) ? realpath($path) : $path;
     }
 
     /**
