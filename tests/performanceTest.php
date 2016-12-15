@@ -38,6 +38,13 @@ class PerformanceTest extends PHPUnit
         $this->_root = $root;
     }
 
+    public function tearDown()
+    {
+        parent::tearDown();
+        $fs = new Filesystem();
+        $fs->remove($this->_root);
+    }
+
     public function testCompareWithRealpath()
     {
         $fs   = new Filesystem();

@@ -54,6 +54,13 @@ class Path
     const MOD_RESET = 'reset';
 
     /**
+     * Flag of result path (If true, is real path. If false, is relative path).
+     *
+     * @var string
+     */
+    protected $_isReal = true;
+
+    /**
      * Holds paths list.
      *
      * @var array
@@ -250,6 +257,17 @@ class Path
     {
         $this->_checkRoot();
         return $this->_root;
+    }
+
+    /**
+     * Setup real or relative path flag.
+     *
+     * @param bool $isReal
+     * @return void
+     */
+    public function setRealPathFlag($isReal = true)
+    {
+        $this->_isReal = (bool) $isReal;
     }
 
     /**
@@ -548,13 +566,24 @@ class Path
                 $path = $this->_cleanPath($originalPath);
             }
 
-            $result[] = realpath($path);
+            $result[] = $this->_getCurrentPath($path);
         }
 
         $result = array_filter($result); // remove empty
         $result = array_values($result); // reset keys
 
         return $result;
+    }
+
+    /**
+     * Get current resolve path.
+     *
+     * @param string $path
+     * @return string
+     */
+    protected function _getCurrentPath($path)
+    {
+        return ($this->_isReal) ? realpath($path) : $path;
     }
 
     /**
