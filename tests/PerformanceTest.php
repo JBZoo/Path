@@ -6,20 +6,23 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
- * @package   Path
- * @license   MIT
- * @copyright Copyright (C) JBZoo.com,  All rights reserved.
- * @link      https://github.com/JBZoo/Path
+ * @package    Path
+ * @license    MIT
+ * @copyright  Copyright (C) JBZoo.com, All rights reserved.
+ * @link       https://github.com/JBZoo/Path"
+ * @author     Sergey Kalistratov <kalistratov.s.m@gmail.com>
  */
 
 namespace JBZoo\PHPUnit;
 
 use JBZoo\Utils\FS;
 use JBZoo\Path\Path;
+use JBZoo\Profiler\Benchmark;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Class PerformanceTest
+ *
  * @package JBZoo\Path
  */
 class PerformanceTest extends PHPUnit
@@ -27,7 +30,7 @@ class PerformanceTest extends PHPUnit
     /**
      * @var string
      */
-    protected $_root;
+    protected $root;
 
     public function setUp()
     {
@@ -35,22 +38,22 @@ class PerformanceTest extends PHPUnit
         FS::rmdir($root);
 
         mkdir($root, 0777, true);
-        $this->_root = $root;
+        $this->root = $root;
     }
 
     public function tearDown()
     {
         parent::tearDown();
         $fs = new Filesystem();
-        $fs->remove($this->_root);
+        $fs->remove($this->root);
     }
 
     public function testCompareWithRealpath()
     {
-        $fs   = new Filesystem();
-        $root = $this->_root . '/';
+        $fs = new Filesystem();
+        $root = $this->root . '/';
 
-        runBench(array(
+        Benchmark::compare([
             'JBZoo\Path' => function () use ($fs, $root) {
 
                 $newDir = $root . mt_rand();
@@ -78,19 +81,20 @@ class PerformanceTest extends PHPUnit
 
                 return $result;
             },
-        ), array('count' => 1000, 'name' => 'Compare with realpath'));
+        ], ['count' => 1000, 'name' => 'Compare with realpath']);
+        isTrue(true);
     }
 
     public function testPathResolver()
     {
-        $fs   = new Filesystem();
-        $root = $this->_root . '/';
+        $fs = new Filesystem();
+        $root = $this->root . '/';
 
         $virtPath = new Path();
         $virtPath->set('default', $root);
 
-        runBench(array(
-            'new path (new obj and dir)'  => function () use ($fs, $root) {
+        Benchmark::compare([
+            'new path (new obj and dir)' => function () use ($fs, $root) {
 
                 $newDir = $root . mt_rand();
                 $fs->mkdir($newDir);
@@ -103,17 +107,18 @@ class PerformanceTest extends PHPUnit
 
                 return $result;
             },
-            'same path (new)' => function () use ($fs, $root) {
+            'same path (new)'            => function () use ($fs, $root) {
                 $virtPath = new Path();
                 $virtPath->set('default', $root);
                 $result = $virtPath->get('default:');
 
                 return $result;
             },
-            'same path' => function () use ($fs, $root, $virtPath) {
+            'same path'                  => function () use ($fs, $root, $virtPath) {
                 $result = $virtPath->get('default:');
                 return $result;
             },
-        ), array('count' => 1000, 'name' => 'path resolver'));
+        ], ['count' => 1000, 'name' => 'path resolver']);
+        isTrue(true);
     }
 }

@@ -22,7 +22,7 @@
         "jbzoo/utils" : "^2.0"
     },
     "require-dev"       : {
-        "jbzoo/phpunit"      : "^2.0",
+        "jbzoo/phpunit"      : "^2.2.1",
         "symfony/filesystem" : "^2.8",
         "jbzoo/profiler"     : "^1.0"
     },

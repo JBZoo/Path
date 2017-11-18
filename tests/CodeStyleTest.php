@@ -6,22 +6,22 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
- * @package   Path
- * @license   MIT
- * @copyright Copyright (C) JBZoo.com,  All rights reserved.
- * @link      https://github.com/JBZoo/Path
- * @author    Sergey Kalistratov <kalistratov.s.m@gmail.com>
+ * @package    Path
+ * @license    MIT
+ * @copyright  Copyright (C) JBZoo.com, All rights reserved.
+ * @link       https://github.com/JBZoo/Path"
+ * @author     Sergey Kalistratov <kalistratov.s.m@gmail.com>
  */
 
 namespace JBZoo\PHPUnit;
 
 /**
  * Class CodeStyleTest
+ *
  * @package JBZoo\PHPUnit
  */
-class CodeStyleTestTest extends Codestyle
+class CodeStyleTest extends Codestyle
 {
     protected $_packageName = 'Path';
-
     protected $_packageAuthor = 'Sergey Kalistratov <kalistratov.s.m@gmail.com>';
 }
