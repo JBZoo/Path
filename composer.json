@@ -19,10 +19,10 @@
     ],
     "require"           : {
         "php"         : ">=7.0",
-        "jbzoo/utils" : "^2.0"
+        "jbzoo/utils" : "^1.0|^2.0"
     },
     "require-dev"       : {
-        "jbzoo/phpunit"      : "^2.2.1",
+        "jbzoo/phpunit"      : "^1.0|^2.2.1",
         "symfony/filesystem" : "^2.8",
         "jbzoo/profiler"     : "^1.0"
     },
