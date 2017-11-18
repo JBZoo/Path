@@ -319,7 +319,7 @@ class Path
         $return = false;
 
         foreach ($paths as $origPath) {
-            $path = $this->_cleanPath($this->cleanPath($origPath));
+            $path = $this->cleanPathInternal($this->cleanPath($origPath));
 
             $key = array_search($path, $this->paths[$alias], true);
             if (false !== $key) {
@@ -358,7 +358,7 @@ class Path
         $details = explode('?', $source);
 
         $path = $details[0];
-        $path = $this->_cleanPath($path);
+        $path = $this->cleanPathInternal($path);
         $path = $this->getUrlPath($path, true);
 
         if (!empty($path)) {
@@ -411,7 +411,7 @@ class Path
      */
     protected function addNewPath($path, $alias, $mode)
     {
-        if ($cleanPath = $this->_cleanPath($path)) {
+        if ($cleanPath = $this->cleanPathInternal($path)) {
             if ($mode === self::MOD_PREPEND) {
                 array_unshift($this->paths[$alias], $cleanPath);
             }
@@ -459,7 +459,6 @@ class Path
             if (file_exists($fullPath) || is_dir($fullPath)) {
                 return $fullPath;
             }
-
         }
 
         return null;
@@ -472,7 +471,7 @@ class Path
      * @param string $path
      * @return null|string
      */
-    protected function _cleanPath($path)
+    protected function cleanPathInternal($path)
     {
         if ($this->isVirtual($path)) {
             return $this->cleanPath($path);
@@ -498,7 +497,7 @@ class Path
     {
         $this->checkRoot();
 
-        $path = $this->_cleanPath($path);
+        $path = $this->cleanPathInternal($path);
         if ($this->isVirtual($path)) {
             $path = $this->get($path);
         }
@@ -562,11 +561,10 @@ class Path
                 if ($realPath = $this->get($originalPath)) {
                     $path = $realPath;
                 } else {
-                    $path = $this->_cleanPath($originalPath);
+                    $path = $this->cleanPathInternal($originalPath);
                 }
-
             } else {
-                $path = $this->_cleanPath($originalPath);
+                $path = $this->cleanPathInternal($originalPath);
             }
 
             $result[] = $this->getCurrentPath($path);
