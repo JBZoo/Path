@@ -17,7 +17,7 @@ build: update
 
 test-all:
 	@echo "\033[0;33m>>> >>> >>> >>> >>> >>> >>> >>> \033[0;30;46m Run all tests \033[0m"
-	@make validate test phpmd phpcs phpcpd phploc
+	@make validate test phpcpd phploc
 
 update:
 	@echo "\033[0;33m>>> >>> >>> >>> >>> >>> >>> >>> \033[0;30;46m Update project \033[0m"
@@ -26,6 +26,7 @@ update:
 
 validate:
 	@echo "\033[0;33m>>> >>> >>> >>> >>> >>> >>> >>> \033[0;30;46m Composer validate \033[0m"
+	@composer check-platform-reqs --no-interaction
 	@composer validate --no-interaction
 	@echo ""
 

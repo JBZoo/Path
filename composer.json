@@ -7,35 +7,35 @@
     "minimum-stability" : "stable",
     "authors"           : [
         {
-            "name"  : "Sergey Kalistratov",
-            "email" : "kalistratov.s.m@gmail.com",
-            "role"  : "developers"
-        },
-        {
             "name"  : "SmetDenis",
             "email" : "denis@jbzoo.com",
             "role"  : "lead"
+        },
+        {
+            "name"  : "Sergey Kalistratov",
+            "email" : "kalistratov.s.m@gmail.com",
+            "role"  : "developers"
         }
     ],
+
     "require"           : {
-        "php"         : ">=7.0",
-        "jbzoo/utils" : "^1.0|^2.0"
+        "php"         : ">=7.1",
+        "jbzoo/utils" : "^3.0",
+        "jbzoo/data"  : "^3.0"
     },
+
     "require-dev"       : {
-        "jbzoo/phpunit"      : "^1.0|^2.2.1",
-        "symfony/filesystem" : "^2.8",
+        "jbzoo/phpunit"      : "^3.0",
+        "symfony/filesystem" : "^4.4",
         "jbzoo/profiler"     : "^1.0"
     },
+
     "autoload"          : {
         "psr-4" : {
             "JBZoo\\Path\\" : "src"
         }
     },
-    "extra"             : {
-        "branch-alias" : {
-            "dev-master" : "1.x-dev"
-        }
-    },
+
     "support"           : {
         "issues" : "https://github.com/JBZoo/Path/issues"
     }

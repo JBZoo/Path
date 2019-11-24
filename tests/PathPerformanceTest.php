@@ -15,24 +15,24 @@
 
 namespace JBZoo\PHPUnit;
 
-use JBZoo\Utils\FS;
 use JBZoo\Path\Path;
 use JBZoo\Profiler\Benchmark;
+use JBZoo\Utils\FS;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
- * Class PerformanceTest
+ * Class PathPerformanceTest
  *
  * @package JBZoo\Path
  */
-class PerformanceTest extends PHPUnit
+class PathPerformanceTest extends PHPUnit
 {
     /**
      * @var string
      */
     protected $root;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $root = FS::clean(__DIR__ . '/test', '/');
         FS::rmdir($root);
@@ -41,7 +41,7 @@ class PerformanceTest extends PHPUnit
         $this->root = $root;
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
         $fs = new Filesystem();

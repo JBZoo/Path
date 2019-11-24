@@ -15,11 +15,11 @@
 
 namespace JBZoo\PHPUnit;
 
+use JBZoo\Path\Exception;
 use JBZoo\Path\Path;
 use JBZoo\Utils\FS;
 use JBZoo\Utils\Sys;
 use JBZoo\Utils\Url;
-use JBZoo\Path\Exception;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -62,7 +62,7 @@ class PathTest extends PHPUnit
         isSame($this->clr($expected), $this->clr($actual));
     }
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->root = FS::clean(__DIR__ . '/test', '/');
         FS::rmdir($this->root);
@@ -75,18 +75,17 @@ class PathTest extends PHPUnit
         ];
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
         $filesystem = new Filesystem();
         $filesystem->remove($this->root);
     }
 
-    /**
-     * @expectedException \JBZoo\Path\Exception
-     */
     public function testInvalidInstance()
     {
+        $this->expectException(Exception::class);
+
         Path::getInstance('');
     }
 
@@ -173,20 +172,18 @@ class PathTest extends PHPUnit
         $filesystem->remove([$defaultDir, $importDir, $exportDir]);
     }
 
-    /**
-     * @expectedException \JBZoo\Path\Exception
-     */
     public function testAddLoopedPath()
     {
+        $this->expectException(Exception::class);
+
         $path = Path::getInstance(__METHOD__);
         $path->set('default', 'default:');
     }
 
-    /**
-     * @expectedException \JBZoo\Path\Exception
-     */
     public function testSetRootAlias()
     {
+        $this->expectException(Exception::class);
+
         $path = new Path();
         $path->set('root', $this->root);
     }
@@ -320,20 +317,18 @@ class PathTest extends PHPUnit
         $this->is(realpath($newPath), $path->getPaths('default'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testRegisterMinLength()
     {
+        $this->expectException(Exception::class);
+
         $path = Path::getInstance(__METHOD__);
         $path->set('a', $this->root);
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testRegisterEmptyKey()
     {
+        $this->expectException(Exception::class);
+
         $path = Path::getInstance(__METHOD__);
         $path->set(false, $this->root);
     }
@@ -368,9 +363,9 @@ class PathTest extends PHPUnit
     public function testHasPrefix()
     {
         $path = Path::getInstance(__METHOD__);
-        $this->assertInternalType('string', $path->prefix(__DIR__));
-        $this->assertInternalType('string', $path->prefix(dirname(__DIR__)));
-        $this->assertInternalType('string', $path->prefix('P:\\\\Folder\\'));
+        $this->assertIsString($path->prefix(__DIR__));
+        $this->assertIsString($path->prefix(dirname(__DIR__)));
+        $this->assertIsString($path->prefix('P:\\\\Folder\\'));
     }
 
     public function testNoPrefix()
@@ -495,11 +490,10 @@ class PathTest extends PHPUnit
         $this->is([], $path->getPaths('default'));
     }
 
-    /**
-     * @expectedException \JBZoo\Path\Exception
-     */
     public function testSetRootFailed()
     {
+        $this->expectException(Exception::class);
+
         $path = Path::getInstance(__METHOD__);
         $path->setRoot($this->root . DS . mt_rand());
     }
@@ -561,7 +555,7 @@ class PathTest extends PHPUnit
 
         $fs->dumpFile($this->root . DS . 'my-folder2' . DS . 'my-file.txt', '');
 
-        list($path1, $path2) = $paths;
+        [$path1, $path2] = $paths;
 
         $path->setRoot($this->root);
         $path->set('default', $paths);
@@ -610,7 +604,7 @@ class PathTest extends PHPUnit
         ];
         $path->set('default', $paths);
 
-        list($path1, $path2, $path3) = $paths;
+        [$path1, $path2, $path3] = $paths;
 
         $expected = [
             realpath(FS::clean($path3)),

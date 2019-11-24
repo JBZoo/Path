@@ -16,12 +16,12 @@
 namespace JBZoo\PHPUnit;
 
 /**
- * Class CodeStyleTest
+ * Class PathCodeStyleTest
  *
  * @package JBZoo\PHPUnit
  */
-class CodeStyleTest extends Codestyle
+class PathCodeStyleTest extends Codestyle
 {
-    protected $_packageName = 'Path';
+    protected $_packageName   = 'Path';
     protected $_packageAuthor = 'Sergey Kalistratov <kalistratov.s.m@gmail.com>';
 }
