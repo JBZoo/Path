@@ -20,14 +20,14 @@ $path = new Path();
 $path->setRoot(__DIR__);
 
 //  Add paths.
-$path->add(__DIR__ . '/styles/css', 'css');
-$path->add(__DIR__ . '/simple/styles/css', 'css');
-
-//  Add array paths.
-$path->add(array(
-    __DIR__ . 'styles/folder/less',
-    __DIR__ . 'theme/styles/less',
-), 'less');
+$path
+    ->add(__DIR__ . '/styles/css', 'css')
+    ->add(__DIR__ . '/simple/styles/css', 'css')
+    //  Add array paths.
+    ->add([
+        __DIR__ . 'styles/folder/less',
+        __DIR__ . 'theme/styles/less',
+    ], 'less');
 
 /**
  * Add paths by virtual.
@@ -43,21 +43,20 @@ var_dump($path->getPaths('less:'));
 /**
  * Get full path for the first file found, if file exits.
  */
-echo $path->get('css:styles.css');           //  result: C:/Server/jbzoo/styles/css/styles.css
-echo $path->get('less:path/to/styles.less'); //  result: C:/Server/jbzoo/styles/folder/less/path/to/styles.less
+echo $path->get('css:styles.css');           //  result: /jbzoo/styles/css/styles.css
+echo $path->get('less:path/to/styles.less'); //  result: /jbzoo/styles/folder/less/path/to/styles.less
 
 /**
  * Get url for the first file found, if file exits.
  * If - "C:/Server/jbzoo" is root dir we have...
  */
-$path->url('css:styles.css');           //  http://my-site.com/styles/css/styles.css
-$path->url('less:path/to/styles.less')  //  http://my-site.com/styles/css/folder/less/path/to/styles.less
+$path->url('css:styles.css');               //  http://my-site.com/styles/css/styles.css
+$path->url('less:path/to/styles.less');     //  http://my-site.com/styles/css/folder/less/path/to/styles.less
 
 echo '<link rel="stylesheet" href="' . $path->url('css:styles.css') . '">';
 
 //  Clean path.
-$path->clean('C:\server/folder\\\file.txt'); // result: 'C:/server/folder/file.txt'
-$path->clean('path\\to//simple\\folder')    //  result: 'path/to/simple/folder'
+$path->clean('path\\to//simple\\folder');    //  result: 'path/to/simple/folder'
 ```
 
 ### Summary benchmark info (execution time)
