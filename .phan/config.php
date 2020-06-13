@@ -13,14 +13,14 @@
  * @link       https://github.com/JBZoo/Path
  */
 
-namespace JBZoo\Path;
+$default = include __DIR__ . '/../vendor/jbzoo/codestyle/src/phan/default.php';
 
-/**
- * Class Exception
- *
- * @package JBZoo\Path
- */
-class Exception extends \RuntimeException
-{
+return array_merge($default, [
+    'directory_list' => [
+        'src',
 
-}
+        // Libs
+        'vendor/jbzoo/data',
+        'vendor/jbzoo/utils'
+    ]
+]);

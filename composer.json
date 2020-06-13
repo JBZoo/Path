@@ -4,11 +4,10 @@
     "description"       : "PHP virtual path library",
     "license"           : "MIT",
     "keywords"          : ["url", "jbzoo", "path", "realpath", "filesystem", "virtual path"],
-    "minimum-stability" : "stable",
     "authors"           : [
         {
-            "name"  : "SmetDenis",
-            "email" : "denis@jbzoo.com",
+            "name"  : "Denis Smetannikov",
+            "email" : "admin@jbzoo.com",
             "role"  : "lead"
         },
         {
@@ -19,15 +18,14 @@
     ],
 
     "require"           : {
-        "php"         : ">=7.1",
-        "jbzoo/utils" : "^3.0",
-        "jbzoo/data"  : "^3.0"
+        "php"         : ">=7.2",
+
+        "jbzoo/utils" : "4.0.x-dev",
+        "jbzoo/data"  : "4.0.x-dev"
     },
 
     "require-dev"       : {
-        "jbzoo/phpunit"      : "^3.0",
-        "symfony/filesystem" : "^4.4",
-        "jbzoo/profiler"     : "^1.0"
+        "jbzoo/toolbox-dev" : "1.1.x-dev"
     },
 
     "autoload"          : {
@@ -36,7 +34,20 @@
         }
     },
 
-    "support"           : {
-        "issues" : "https://github.com/JBZoo/Path/issues"
+    "minimum-stability" : "dev",
+    "prefer-stable"     : true,
+
+    "autoload-dev"      : {
+        "classmap" : ["tests"]
+    },
+
+    "config"            : {
+        "optimize-autoloader" : true
+    },
+
+    "extra"             : {
+        "branch-alias" : {
+            "dev-master" : "3.0.x-dev"
+        }
     }
 }

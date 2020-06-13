@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-    JBZoo Path
+    JBZoo Toolbox - Path
 
-    This file is part of the JBZoo CCK package.
+    This file is part of the JBZoo Toolbox project.
     For the full copyright and license information, please view the LICENSE
     file that was distributed with this source code.
 
@@ -12,22 +12,24 @@
     @link       https://github.com/JBZoo/Path
 -->
 <phpunit bootstrap="tests/autoload.php"
-         colors="true"
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
+         convertDeprecationsToExceptions="true"
+         executionOrder="random"
          processIsolation="false"
-         stopOnFailures="true"
-         stopOnError="true"
-         stopOnFailure="true"
-         stopOnIncomplete="true"
+         stopOnError="false"
+         stopOnFailure="false"
+         stopOnIncomplete="false"
          stopOnSkipped="false"
+         stopOnRisky="false"
          verbose="true"
+         colors="true"
 >
 
     <testsuites>
-        <testsuite name="General">
-            <directory suffix="Test.php">./tests</directory>
+        <testsuite name="All">
+            <directory suffix="Test.php">tests</directory>
         </testsuite>
     </testsuites>
 
@@ -38,9 +40,10 @@
     </filter>
 
     <logging>
-        <log type="coverage-clover" target="build/logs/clover.xml"/>
-        <log type="coverage-html" target="build/phpunit" lowUpperBound="80" highLowerBound="95"/>
-        <log type="coverage-text" target="php://stdout" showUncoveredFiles="false" showOnlySummary="true"/>
+        <log type="coverage-clover" target="build/coverage_xml/main.xml"/>
+        <log type="coverage-php" target="build/coverage_cov/main.cov"/>
+        <log type="junit" target="build/coverage_junit/main.xml"/>
+        <log type="coverage-text" target="php://stdout" showUncoveredFiles="true" showOnlySummary="false"/>
     </logging>
 
 </phpunit>

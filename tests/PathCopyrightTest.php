@@ -13,14 +13,17 @@
  * @link       https://github.com/JBZoo/Path
  */
 
-namespace JBZoo\Path;
+namespace JBZoo\PHPUnit;
 
 /**
- * Class Exception
+ * Class PathCopyrightTest
  *
- * @package JBZoo\Path
+ * @package JBZoo\PHPUnit
  */
-class Exception extends \RuntimeException
+class PathCopyrightTest extends AbstractCopyrightTest
 {
-
+    /**
+     * @var string
+     */
+    protected $packageName = 'Path';
 }

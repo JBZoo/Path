@@ -1,16 +1,16 @@
 <?php
+
 /**
- * JBZoo Path
+ * JBZoo Toolbox - Path
  *
- * This file is part of the JBZoo CCK package.
+ * This file is part of the JBZoo Toolbox project.
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
  * @package    Path
  * @license    MIT
  * @copyright  Copyright (C) JBZoo.com, All rights reserved.
- * @link       https://github.com/JBZoo/Path"
- * @author     Sergey Kalistratov <kalistratov.s.m@gmail.com>
+ * @link       https://github.com/JBZoo/Path
  */
 
 namespace JBZoo\PHPUnit;
@@ -20,8 +20,11 @@ namespace JBZoo\PHPUnit;
  *
  * @package JBZoo\PHPUnit
  */
-class PathCodeStyleTest extends Codestyle
+class PathCodeStyleTest extends AbstractCodestyleTest
 {
-    protected $_packageName   = 'Path';
-    protected $_packageAuthor = 'Sergey Kalistratov <kalistratov.s.m@gmail.com>';
+    protected function setUp(): void
+    {
+        $this->excludePaths[] = 'resource';
+        parent::setUp();
+    }
 }
