@@ -24,5 +24,5 @@ update: ##@Project Install/Update all 3rd party dependencies
 
 test-all: ##@Project Run all project tests at once
 	@make test
+	@make test-performance-travis
 	@make codestyle
-

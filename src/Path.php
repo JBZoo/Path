@@ -15,6 +15,7 @@
 
 namespace JBZoo\Path;
 
+use JBZoo\Utils\Arr;
 use JBZoo\Utils\FS;
 use JBZoo\Utils\Sys;
 use JBZoo\Utils\Url;
@@ -57,16 +58,16 @@ class Path
     /**
      * Root directory
      *
-     * @var string
+     * @var string|null
      */
     protected $root;
 
     /**
      * Path constructor.
-     * @param string $root
+     * @param string|null $root
      * @throws Exception
      */
-    public function __construct($root = null)
+    public function __construct(string $root = null)
     {
         $root = $root ?: Sys::getDocRoot();
         $this->setRoot($root);
@@ -81,10 +82,11 @@ class Path
      * @param string       $alias
      * @param string|array $paths
      * @param string       $mode
+     * @return $this
      *
      * @throws Exception
      */
-    public function set(string $alias, $paths, string $mode = Path::MOD_PREPEND): void
+    public function set(string $alias, $paths, string $mode = Path::MOD_PREPEND): self
     {
         $paths = (array)$paths;
         $alias = $this->cleanAlias($alias);
@@ -99,7 +101,6 @@ class Path
 
         if ($mode === self::MOD_RESET) { // Reset mode
             $this->paths[$alias] = [];
-
             $mode = self::MOD_PREPEND; // Add new paths in Prepend mode
         }
 
@@ -117,6 +118,8 @@ class Path
                 $this->addNewPath($path, $alias, $mode);
             }
         }
+
+        return $this;
     }
 
     /**
@@ -133,7 +136,7 @@ class Path
         $prefix = (string)$this->prefix($cleanedPath);
         $cleanedPath = (string)substr($cleanedPath, (int)strlen($prefix));
 
-        $parts = array_filter(explode('/', $cleanedPath), function ($value) {
+        $parts = array_filter(explode('/', $cleanedPath), static function ($value) {
             return ($value);
         });
 
@@ -152,10 +155,10 @@ class Path
      * Get absolute path to a file or a directory.
      *
      * @param string $source (example: "default:file.txt")
-     * @return null|string
+     * @return string|null
      * @throws Exception
      */
-    public function get($source): ?string
+    public function get(string $source): ?string
     {
         $parsedSource = $this->parse($source);
         return $this->find($parsedSource[1], $parsedSource[2]);
@@ -168,7 +171,7 @@ class Path
      * @return array|null
      * @throws Exception
      */
-    public function glob($source): ?array
+    public function glob(string $source): ?array
     {
         $parsedSource = $this->parse($source);
         return $this->findViaGlob($parsedSource[1], $parsedSource[2]);
@@ -178,10 +181,10 @@ class Path
      * Get all absolute path to a file or a directory.
      *
      * @param string $source (example: "default:file.txt")
-     * @return mixed
+     * @return array
      * @throws Exception
      */
-    public function getPaths($source)
+    public function getPaths(string $source): array
     {
         $source = $this->cleanSource($source);
         $parsedSource = $this->parse($source);
@@ -196,7 +199,10 @@ class Path
      */
     public function getRoot()
     {
-        $this->checkRoot();
+        if (!$this->root) {
+            throw new Exception('Please, set the root directory');
+        }
+
         return $this->root;
     }
 
@@ -204,11 +210,12 @@ class Path
      * Setup real or relative path flag.
      *
      * @param bool $isReal
-     * @return void
+     * @return $this
      */
-    public function setRealPathFlag($isReal = true): void
+    public function setRealPathFlag(bool $isReal = true): self
     {
-        $this->isReal = (bool)$isReal;
+        $this->isReal = $isReal;
+        return $this;
     }
 
     /**
@@ -217,7 +224,7 @@ class Path
      * @param string $path (example: "default:file.txt" or "C:\server\test.dev\file.txt")
      * @return bool
      */
-    public function isVirtual($path): bool
+    public function isVirtual(string $path): bool
     {
         $parts = explode(':', $path, 2);
 
@@ -236,7 +243,7 @@ class Path
      * @param string $path (example: "C:\server\test.dev\file.txt")
      * @return string|null
      */
-    public function prefix($path): ?string
+    public function prefix(string $path): ?string
     {
         $path = $this->cleanPath($path);
         return preg_match('|^(?P<prefix>([a-zA-Z]+:)?//?)|', $path, $matches) ? $matches['prefix'] : null;
@@ -250,7 +257,7 @@ class Path
      * @return bool
      * @throws Exception
      */
-    public function remove($fromSource, $paths): bool
+    public function remove(string $fromSource, $paths): bool
     {
         $paths = (array)$paths;
         $fromSource = $this->cleanSource($fromSource);
@@ -275,15 +282,19 @@ class Path
      * Setup root directory.
      *
      * @param string|null $newRootPath
+     * @return $this
+     *
      * @throws Exception
      */
-    public function setRoot(?string $newRootPath): void
+    public function setRoot(?string $newRootPath): self
     {
         if (!$newRootPath || !is_dir($newRootPath)) {
             throw new Exception("Not found directory: {$newRootPath}");
         }
 
         $this->root = $this->cleanPath($newRootPath);
+
+        return $this;
     }
 
     /**
@@ -318,10 +329,10 @@ class Path
      * Get relative path to file or directory
      *
      * @param string $source (example: "default:file.txt")
-     * @return null|string
+     * @return string|null
      * @throws Exception
      */
-    public function rel($source): ?string
+    public function rel(string $source): ?string
     {
         $fullpath = (string)$this->get($source);
         return FS::getRelative($fullpath, $this->root, '/');
@@ -334,7 +345,7 @@ class Path
      * @return array
      * @throws Exception
      */
-    public function relGlob($source): array
+    public function relGlob(string $source): array
     {
         $list = (array)$this->glob($source);
         foreach ($list as $key => $item) {
@@ -350,9 +361,9 @@ class Path
      * @param string $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
      * @param string $alias
      * @param string $mode
-     * @return void
+     * @return $this
      */
-    protected function addNewPath(string $path, string $alias, string $mode): void
+    protected function addNewPath(string $path, string $alias, string $mode): self
     {
         if ($cleanPath = $this->cleanPathInternal($path)) {
             if ($mode === self::MOD_PREPEND) {
@@ -363,18 +374,8 @@ class Path
                 $this->paths[$alias][] = $cleanPath;
             }
         }
-    }
 
-    /**
-     * Check root directory.
-     *
-     * @throws Exception
-     */
-    protected function checkRoot(): void
-    {
-        if (!$this->root) {
-            throw new Exception('Please, set the root directory');
-        }
+        return $this;
     }
 
     /**
@@ -403,7 +404,7 @@ class Path
     /**
      * Find actual file or directory in the paths.
      *
-     * @param string|array $paths
+     * @param array|string $paths
      * @param string       $file
      * @return array
      */
@@ -412,15 +413,14 @@ class Path
         $paths = (array)$paths;
         $file = ltrim($file, "\\/");
 
-        foreach ($paths as $path) {
-            $fullPath = $this->clean($path . '/' . $file);
+        $path = Arr::first($paths);
 
-            $paths = glob($fullPath, GLOB_BRACE);
-            $paths = array_filter((array)$paths);
-            return $paths ?: [];
-        }
+        $fullPath = $this->clean($path . '/' . $file);
 
-        return [];
+        $paths = glob($fullPath, GLOB_BRACE);
+        $paths = array_filter((array)$paths);
+
+        return $paths ?: [];
     }
 
     /**
@@ -429,7 +429,7 @@ class Path
      * @param string $path (example: "default:file.txt" or "C:/Server/public_html/index.php")
      * @return null|string
      */
-    protected function cleanPathInternal($path): ?string
+    protected function cleanPathInternal(string $path): ?string
     {
         if ($this->isVirtual($path)) {
             return $this->cleanPath($path);
@@ -451,9 +451,11 @@ class Path
      * @return string|null
      * @throws Exception
      */
-    protected function getUrlPath($path, $exitsFile = false): ?string
+    protected function getUrlPath(string $path, bool $exitsFile = false): ?string
     {
-        $this->checkRoot();
+        if (!$this->root) {
+            throw new Exception('Please, set the root directory');
+        }
 
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         if ($path = $this->cleanPathInternal($path)) {
@@ -481,7 +483,7 @@ class Path
      * @param string $path
      * @return int
      */
-    protected function hasCDBack($path): int
+    protected function hasCDBack(string $path): int
     {
         $path = $this->cleanPath($path);
         return int(preg_match('(/\.\.$|/\.\./$)', $path));
@@ -494,7 +496,7 @@ class Path
      * @return array
      * @throws Exception
      */
-    protected function parse($source): array
+    protected function parse(string $source): array
     {
         [$alias, $path] = explode(':', $source, 2);
 
@@ -509,7 +511,7 @@ class Path
      * @return array
      * @throws Exception
      */
-    protected function resolvePaths($alias): array
+    protected function resolvePaths(string $alias): array
     {
         if ($alias === 'root') {
             return [$this->getRoot()];
@@ -542,7 +544,7 @@ class Path
      * @param string $path
      * @return string|null
      */
-    protected function getCurrentPath($path): ?string
+    protected function getCurrentPath(string $path): ?string
     {
         return (string)($this->isReal ? realpath($path) : $path) ?: null;
     }
@@ -551,7 +553,7 @@ class Path
      * @param string $alias
      * @return string
      */
-    protected function cleanAlias($alias): string
+    protected function cleanAlias(string $alias): string
     {
         return (string)preg_replace('/[^a-z0-9_\.-]/i', '', $alias);
     }
@@ -560,7 +562,7 @@ class Path
      * @param string $source
      * @return string
      */
-    protected function cleanSource($source): string
+    protected function cleanSource(string $source): string
     {
         $source = $this->cleanAlias($source);
         $source .= ':';

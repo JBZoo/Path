@@ -14,7 +14,7 @@ require_once './vendor/autoload.php'; // composer autoload.php
 use JBZoo\Path\Path;
 
 //  Get path instance.
-$path = Path::getInstance('default');
+$path = new Path();
 
 //  Setup root directory.
 $path->setRoot(__DIR__);
@@ -60,10 +60,20 @@ $path->clean('C:\server/folder\\\file.txt'); // result: 'C:/server/folder/file.t
 $path->clean('path\\to//simple\\folder')    //  result: 'path/to/simple/folder'
 ```
 
+### Summary benchmark info (execution time)
+
+See details [here](tests/phpbench/CompareWithRealpath.php)
+
+subject | groups | its | revs | mean | stdev | rstdev | mem_real | diff
+ --- | --- | --- | --- | --- | --- | --- | --- | --- 
+benchBaseline |  | 3 | 10000 | 2.53μs | 0.11μs | 4.39% | 6,291,456b | 1.00x
+benchNative |  | 3 | 10000 | 138.22μs | 0.46μs | 0.33% | 6,291,456b | 54.64x
+benchJBZooPath |  | 3 | 10000 | 192.58μs | 0.87μs | 0.45% | 6,291,456b | 76.13x
+
 
 ## Unit tests and check code style
 ```sh
-make
+make update
 make test-all
 ```
 

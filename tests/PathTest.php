@@ -171,8 +171,9 @@ class PathTest extends PHPUnit
             'undefined:undefined',
         ];
 
-        $this->path->set('default', $paths, Path::MOD_APPEND);
-        $this->path->set('somepath', $this->root);
+        $this->path
+            ->set('default', $paths, Path::MOD_APPEND)
+            ->set('somepath', $this->root);
 
         $expected = [
             realpath($this->root),
