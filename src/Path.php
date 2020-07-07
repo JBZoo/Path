@@ -89,7 +89,7 @@ class Path
     public function set(string $alias, $paths, string $mode = Path::MOD_PREPEND): self
     {
         $paths = (array)$paths;
-        $alias = $this->cleanAlias($alias);
+        $alias = self::cleanAlias($alias);
 
         if (strlen($alias) < self::MIN_ALIAS_LENGTH) {
             throw new Exception('The minimum number of characters is ' . self::MIN_ALIAS_LENGTH);
@@ -109,7 +109,7 @@ class Path
                 $this->paths[$alias] = [];
             }
 
-            $path = $this->cleanPath($path);
+            $path = self::cleanPath($path);
             if ($path && !in_array($path, $this->paths[$alias], true)) {
                 if (preg_match('/^' . preg_quote($alias . ':', '') . '/i', $path)) {
                     throw new Exception("Added looped path \"{$path}\" to key \"{$alias}\"");
@@ -128,12 +128,12 @@ class Path
      * @param string $path ("C:\server\test.dev\file.txt")
      * @return string
      */
-    public function clean(string $path): string
+    public static function clean(string $path): string
     {
         $tokens = [];
-        $cleanedPath = $this->cleanPath($path);
+        $cleanedPath = self::cleanPath($path);
 
-        $prefix = (string)$this->prefix($cleanedPath);
+        $prefix = (string)self::prefix($cleanedPath);
         $cleanedPath = (string)substr($cleanedPath, (int)strlen($prefix));
 
         $parts = array_filter(explode('/', $cleanedPath), static function ($value) {
@@ -161,7 +161,7 @@ class Path
     public function get(string $source): ?string
     {
         $parsedSource = $this->parse($source);
-        return $this->find($parsedSource[1], $parsedSource[2]);
+        return self::find($parsedSource[1], $parsedSource[2]);
     }
 
     /**
@@ -174,7 +174,7 @@ class Path
     public function glob(string $source): ?array
     {
         $parsedSource = $this->parse($source);
-        return $this->findViaGlob($parsedSource[1], $parsedSource[2]);
+        return self::findViaGlob($parsedSource[1], $parsedSource[2]);
     }
 
     /**
@@ -186,7 +186,7 @@ class Path
      */
     public function getPaths(string $source): array
     {
-        $source = $this->cleanSource($source);
+        $source = self::cleanSource($source);
         $parsedSource = $this->parse($source);
         return $parsedSource[1];
     }
@@ -229,8 +229,8 @@ class Path
         $parts = explode(':', $path, 2);
 
         [$alias] = $parts;
-        $alias = $this->cleanAlias($alias);
-        if (!array_key_exists($alias, $this->paths) && $this->prefix($path) !== null) {
+        $alias = self::cleanAlias($alias);
+        if (!array_key_exists($alias, $this->paths) && self::prefix($path) !== null) {
             return false;
         }
 
@@ -243,9 +243,9 @@ class Path
      * @param string $path (example: "C:\server\test.dev\file.txt")
      * @return string|null
      */
-    public function prefix(string $path): ?string
+    public static function prefix(string $path): ?string
     {
-        $path = $this->cleanPath($path);
+        $path = self::cleanPath($path);
         return preg_match('|^(?P<prefix>([a-zA-Z]+:)?//?)|', $path, $matches) ? $matches['prefix'] : null;
     }
 
@@ -260,13 +260,13 @@ class Path
     public function remove(string $fromSource, $paths): bool
     {
         $paths = (array)$paths;
-        $fromSource = $this->cleanSource($fromSource);
+        $fromSource = self::cleanSource($fromSource);
         [$alias] = $this->parse($fromSource);
 
         $return = false;
 
         foreach ($paths as $origPath) {
-            $path = $this->cleanPathInternal($this->cleanPath($origPath));
+            $path = $this->cleanPathInternal(self::cleanPath($origPath));
 
             $key = array_search($path, $this->paths[$alias], true);
             if (false !== $key) {
@@ -292,7 +292,7 @@ class Path
             throw new Exception("Not found directory: {$newRootPath}");
         }
 
-        $this->root = $this->cleanPath($newRootPath);
+        $this->root = self::cleanPath($newRootPath);
 
         return $this;
     }
@@ -385,13 +385,13 @@ class Path
      * @param string       $file
      * @return string|null
      */
-    protected function find($paths, $file): ?string
+    protected static function find($paths, string $file): ?string
     {
         $paths = (array)$paths;
         $file = ltrim($file, "\\/");
 
         foreach ($paths as $path) {
-            $fullPath = $this->clean($path . '/' . $file);
+            $fullPath = self::clean($path . '/' . $file);
 
             if (file_exists($fullPath) || is_dir($fullPath)) {
                 return $fullPath;
@@ -408,14 +408,14 @@ class Path
      * @param string       $file
      * @return array
      */
-    protected function findViaGlob($paths, $file): array
+    protected static function findViaGlob($paths, string $file): array
     {
         $paths = (array)$paths;
         $file = ltrim($file, "\\/");
 
         $path = Arr::first($paths);
 
-        $fullPath = $this->clean($path . '/' . $file);
+        $fullPath = self::clean($path . '/' . $file);
 
         $paths = glob($fullPath, GLOB_BRACE);
         $paths = array_filter((array)$paths);
@@ -432,15 +432,15 @@ class Path
     protected function cleanPathInternal(string $path): ?string
     {
         if ($this->isVirtual($path)) {
-            return $this->cleanPath($path);
+            return self::cleanPath($path);
         }
 
-        if ($this->hasCDBack($path)) {
-            $realpath = $this->cleanPath((string)realpath($path));
+        if (self::hasCDBack($path)) {
+            $realpath = self::cleanPath((string)realpath($path));
             return $realpath ?: null;
         }
 
-        return $this->cleanPath($path);
+        return self::cleanPath($path);
     }
 
     /**
@@ -483,9 +483,9 @@ class Path
      * @param string $path
      * @return int
      */
-    protected function hasCDBack(string $path): int
+    protected static function hasCDBack(string $path): int
     {
-        $path = $this->cleanPath($path);
+        $path = self::cleanPath($path);
         return int(preg_match('(/\.\.$|/\.\./$)', $path));
     }
 
@@ -517,7 +517,7 @@ class Path
             return [$this->getRoot()];
         }
 
-        $alias = $this->cleanAlias($alias);
+        $alias = self::cleanAlias($alias);
 
         $paths = $this->paths[$alias] ?? [];
 
@@ -553,7 +553,7 @@ class Path
      * @param string $alias
      * @return string
      */
-    protected function cleanAlias(string $alias): string
+    protected static function cleanAlias(string $alias): string
     {
         return (string)preg_replace('/[^a-z0-9_\.-]/i', '', $alias);
     }
@@ -562,9 +562,9 @@ class Path
      * @param string $source
      * @return string
      */
-    protected function cleanSource(string $source): string
+    protected static function cleanSource(string $source): string
     {
-        $source = $this->cleanAlias($source);
+        $source = self::cleanAlias($source);
         $source .= ':';
 
         return $source;
@@ -576,7 +576,7 @@ class Path
      * @param string|null $path
      * @return string
      */
-    protected function cleanPath(?string $path): string
+    protected static function cleanPath(?string $path): string
     {
         return FS::clean((string)$path, '/');
     }

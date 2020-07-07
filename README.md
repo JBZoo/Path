@@ -55,7 +55,7 @@ $path->url('less:path/to/styles.less');     //  http://my-site.com/styles/css/fo
 echo '<link rel="stylesheet" href="' . $path->url('css:styles.css') . '">';
 
 //  Clean path.
-$path->clean('path\\to//simple\\folder');    //  result: 'path/to/simple/folder'
+Path::clean('path\\to//simple\\folder');    //  result: 'path/to/simple/folder'
 ```
 
 ### Summary benchmark info (execution time)

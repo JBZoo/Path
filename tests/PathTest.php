@@ -306,25 +306,25 @@ class PathTest extends PHPUnit
 
     public function testHasPrefix()
     {
-        $this->assertIsString($this->path->prefix(__DIR__));
-        $this->assertIsString($this->path->prefix(dirname(__DIR__)));
-        $this->assertIsString($this->path->prefix('P:\\\\Folder\\'));
+        $this->assertIsString(Path::prefix(__DIR__));
+        $this->assertIsString(Path::prefix(dirname(__DIR__)));
+        $this->assertIsString(Path::prefix('P:\\\\Folder\\'));
     }
 
     public function testNoPrefix()
     {
-        isNull($this->path->prefix('folder/file.txt'));
-        isNull($this->path->prefix('./folder/file.txt'));
-        isNull($this->path->prefix('default:folder/file.txt'));
+        isNull(Path::prefix('folder/file.txt'));
+        isNull(Path::prefix('./folder/file.txt'));
+        isNull(Path::prefix('default:folder/file.txt'));
     }
 
     public function testClean()
     {
-        isSame(FS::clean(__DIR__, '/'), $this->path->clean(__DIR__));
-        isSame('test/path/folder', $this->path->clean('../test/path/folder/'));
-        isSame('test/path/folder', $this->path->clean('../../test/path/folder/'));
-        isSame('test/path/folder', $this->path->clean('..\..\test\path\folder\\'));
-        isSame('test/path/folder', $this->path->clean('..\../test///path/\/\folder/\\'));
+        isSame(FS::clean(__DIR__, '/'), Path::clean(__DIR__));
+        isSame('test/path/folder', Path::clean('../test/path/folder/'));
+        isSame('test/path/folder', Path::clean('../../test/path/folder/'));
+        isSame('test/path/folder', Path::clean('..\..\test\path\folder\\'));
+        isSame('test/path/folder', Path::clean('..\../test///path/\/\folder/\\'));
     }
 
     public function testPathSuccess()
