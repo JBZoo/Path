@@ -1,7 +1,9 @@
 # JBZoo / Path
 
 [![Build Status](https://travis-ci.org/JBZoo/Path.svg?branch=master)](https://travis-ci.org/JBZoo/Path)    [![Coverage Status](https://coveralls.io/repos/JBZoo/Path/badge.svg)](https://coveralls.io/github/JBZoo/Path?branch=master)    [![Psalm Coverage](https://shepherd.dev/github/JBZoo/Path/coverage.svg)](https://shepherd.dev/github/JBZoo/Path)    
-[![Latest Stable Version](https://poser.pugx.org/JBZoo/Path/v)](https://packagist.org/packages/JBZoo/Path)    [![Latest Unstable Version](https://poser.pugx.org/JBZoo/Path/v/unstable)](https://packagist.org/packages/JBZoo/Path)    [![Dependents](https://poser.pugx.org/JBZoo/Path/dependents)](https://packagist.org/packages/JBZoo/Path/dependents?order_by=downloads)    [![GitHub Issues](https://img.shields.io/github/issues/JBZoo/Path)](https://github.com/JBZoo/Path/issues)    [![Total Downloads](https://poser.pugx.org/JBZoo/Path/downloads)](https://packagist.org/packages/JBZoo/Path/stats)    [![GitHub License](https://img.shields.io/github/license/JBZoo/Path)](https://github.com/JBZoo/Path/blob/master/LICENSE)
+[![Stable Version](https://poser.pugx.org/jbzoo/path/version)](https://packagist.org/packages/jbzoo/path)    [![Latest Unstable Version](https://poser.pugx.org/jbzoo/path/v/unstable)](https://packagist.org/packages/jbzoo/path)    [![Dependents](https://poser.pugx.org/jbzoo/path/dependents)](https://packagist.org/packages/jbzoo/path/dependents?order_by=downloads)    [![GitHub Issues](https://img.shields.io/github/issues/jbzoo/path)](https://github.com/JBZoo/Path/issues)    [![Total Downloads](https://poser.pugx.org/jbzoo/path/downloads)](https://packagist.org/packages/jbzoo/path/stats)    [![GitHub License](https://img.shields.io/github/license/jbzoo/path)](https://github.com/JBZoo/Path/blob/master/LICENSE)
+
+
 
 Create memory based aliases for your project file system.
 
