@@ -13,6 +13,8 @@
  * @link       https://github.com/JBZoo/Path
  */
 
+declare(strict_types=1);
+
 namespace JBZoo\Path;
 
 use JBZoo\Utils\Arr;
@@ -91,7 +93,7 @@ class Path
         $paths = (array)$paths;
         $alias = self::cleanAlias($alias);
 
-        if (strlen($alias) < self::MIN_ALIAS_LENGTH) {
+        if (\strlen($alias) < self::MIN_ALIAS_LENGTH) {
             throw new Exception('The minimum number of characters is ' . self::MIN_ALIAS_LENGTH);
         }
 
@@ -110,8 +112,8 @@ class Path
             }
 
             $path = self::cleanPath($path);
-            if ($path && !in_array($path, $this->paths[$alias], true)) {
-                if (preg_match('/^' . preg_quote($alias . ':', '') . '/i', $path)) {
+            if ($path && !\in_array($path, $this->paths[$alias], true)) {
+                if (\preg_match('/^' . \preg_quote($alias . ':', '') . '/i', $path)) {
                     throw new Exception("Added looped path \"{$path}\" to key \"{$alias}\"");
                 }
 
@@ -134,21 +136,21 @@ class Path
         $cleanedPath = self::cleanPath($path);
 
         $prefix = (string)self::prefix($cleanedPath);
-        $cleanedPath = (string)substr($cleanedPath, (int)strlen($prefix));
+        $cleanedPath = (string)\substr($cleanedPath, (int)\strlen($prefix));
 
-        $parts = array_filter(explode('/', $cleanedPath), static function ($value) {
+        $parts = \array_filter(\explode('/', $cleanedPath), static function ($value) {
             return ($value);
         });
 
         foreach ($parts as $part) {
             if ('..' === $part) {
-                array_pop($tokens);
+                \array_pop($tokens);
             } elseif ('.' !== $part) {
                 $tokens[] = $part;
             }
         }
 
-        return $prefix . implode('/', $tokens);
+        return $prefix . \implode('/', $tokens);
     }
 
     /**
@@ -193,11 +195,9 @@ class Path
 
     /**
      * Get root directory.
-     *
-     * @return mixed
-     * @throws Exception
+     * @return string|null
      */
-    public function getRoot()
+    public function getRoot(): ?string
     {
         if (!$this->root) {
             throw new Exception('Please, set the root directory');
@@ -226,15 +226,17 @@ class Path
      */
     public function isVirtual(string $path): bool
     {
-        $parts = explode(':', $path, 2);
+        $parts = \explode(':', $path, 2);
 
         [$alias] = $parts;
         $alias = self::cleanAlias($alias);
-        if (!array_key_exists($alias, $this->paths) && self::prefix($path) !== null) {
+        if (!\array_key_exists($alias, $this->paths) && self::prefix($path) !== null) {
             return false;
         }
 
-        return count($parts) === 2;
+        $validNumberOfParts = 2;
+
+        return \count($parts) === $validNumberOfParts;
     }
 
     /**
@@ -246,7 +248,7 @@ class Path
     public static function prefix(string $path): ?string
     {
         $path = self::cleanPath($path);
-        return preg_match('|^(?P<prefix>([a-zA-Z]+:)?//?)|', $path, $matches) ? $matches['prefix'] : null;
+        return \preg_match('|^(?P<prefix>([a-zA-Z]+:)?//?)|', $path, $matches) ? $matches['prefix'] : null;
     }
 
     /**
@@ -268,7 +270,7 @@ class Path
         foreach ($paths as $origPath) {
             $path = $this->cleanPathInternal(self::cleanPath($origPath));
 
-            $key = array_search($path, $this->paths[$alias], true);
+            $key = \array_search($path, $this->paths[$alias], true);
             if (false !== $key) {
                 unset($this->paths[$alias][$key]);
                 $return = true;
@@ -288,7 +290,7 @@ class Path
      */
     public function setRoot(?string $newRootPath): self
     {
-        if (!$newRootPath || !is_dir($newRootPath)) {
+        if (!$newRootPath || !\is_dir($newRootPath)) {
             throw new Exception("Not found directory: {$newRootPath}");
         }
 
@@ -307,7 +309,7 @@ class Path
      */
     public function url(string $source, bool $isFullUrl = true): ?string
     {
-        $details = explode('?', $source);
+        $details = \explode('?', $source);
         if ($path = $this->cleanPathInternal((string)($details[0] ?? ''))) {
             $path = $this->getUrlPath($path, true);
 
@@ -367,7 +369,7 @@ class Path
     {
         if ($cleanPath = $this->cleanPathInternal($path)) {
             if ($mode === self::MOD_PREPEND) {
-                array_unshift($this->paths[$alias], $cleanPath);
+                \array_unshift($this->paths[$alias], $cleanPath);
             }
 
             if ($mode === self::MOD_APPEND) {
@@ -388,12 +390,12 @@ class Path
     protected static function find($paths, string $file): ?string
     {
         $paths = (array)$paths;
-        $file = ltrim($file, "\\/");
+        $file = \ltrim($file, "\\/");
 
         foreach ($paths as $path) {
             $fullPath = self::clean($path . '/' . $file);
 
-            if (file_exists($fullPath) || is_dir($fullPath)) {
+            if (\file_exists($fullPath) || \is_dir($fullPath)) {
                 return $fullPath;
             }
         }
@@ -411,14 +413,14 @@ class Path
     protected static function findViaGlob($paths, string $file): array
     {
         $paths = (array)$paths;
-        $file = ltrim($file, "\\/");
+        $file = \ltrim($file, "\\/");
 
         $path = Arr::first($paths);
 
         $fullPath = self::clean($path . '/' . $file);
 
-        $paths = glob($fullPath, GLOB_BRACE);
-        $paths = array_filter((array)$paths);
+        $paths = \glob($fullPath, \GLOB_BRACE);
+        $paths = \array_filter((array)$paths);
 
         return $paths ?: [];
     }
@@ -436,7 +438,7 @@ class Path
         }
 
         if (self::hasCDBack($path)) {
-            $realpath = self::cleanPath((string)realpath($path));
+            $realpath = self::cleanPath((string)\realpath($path));
             return $realpath ?: null;
         }
 
@@ -465,13 +467,13 @@ class Path
             }
 
             $subject = $path;
-            $pattern = '/^' . preg_quote($this->root, '/') . '/i';
+            $pattern = '/^' . \preg_quote($this->root, '/') . '/i';
 
-            if ($path && $exitsFile && !$this->isVirtual($path) && !file_exists($path)) {
+            if ($path && $exitsFile && !$this->isVirtual($path) && !\file_exists($path)) {
                 $subject = null;
             }
 
-            return ltrim((string)preg_replace($pattern, '', (string)$subject), '/');
+            return \ltrim((string)\preg_replace($pattern, '', (string)$subject), '/');
         }
 
         return null;
@@ -486,7 +488,7 @@ class Path
     protected static function hasCDBack(string $path): int
     {
         $path = self::cleanPath($path);
-        return int(preg_match('(/\.\.$|/\.\./$)', $path));
+        return int(\preg_match('(/\.\.$|/\.\./$)', $path));
     }
 
     /**
@@ -498,9 +500,9 @@ class Path
      */
     protected function parse(string $source): array
     {
-        [$alias, $path] = explode(':', $source, 2);
+        [$alias, $path] = \explode(':', $source, 2);
 
-        $path = ltrim($path, "\\/");
+        $path = \ltrim($path, "\\/");
         $paths = $this->resolvePaths($alias);
 
         return [$alias, $paths, $path];
@@ -532,8 +534,8 @@ class Path
             $result[] = $this->getCurrentPath((string)$path);
         }
 
-        $result = array_filter($result); // remove empty
-        $result = array_values($result); // reset keys
+        $result = \array_filter($result); // remove empty
+        $result = \array_values($result); // reset keys
 
         return $result;
     }
@@ -546,7 +548,7 @@ class Path
      */
     protected function getCurrentPath(string $path): ?string
     {
-        return (string)($this->isReal ? realpath($path) : $path) ?: null;
+        return (string)($this->isReal ? \realpath($path) : $path) ?: null;
     }
 
     /**
@@ -555,7 +557,7 @@ class Path
      */
     protected static function cleanAlias(string $alias): string
     {
-        return (string)preg_replace('/[^a-z0-9_\.-]/i', '', $alias);
+        return (string)\preg_replace('/[^a-z0-9_\.-]/i', '', $alias);
     }
 
     /**

@@ -13,6 +13,8 @@
  * @link       https://github.com/JBZoo/Path
  */
 
+declare(strict_types=1);
+
 namespace JBZoo\PHPUnit;
 
 use JBZoo\Path\Exception;
@@ -220,7 +222,7 @@ class PathTest extends PHPUnit
         $appendPath = $this->root . '/../..';
 
         $this->path->set('default', $paths);
-        $this->path->set('default', $appendPath, Path::MOD_PREPEND);
+        $this->path->set('default', $appendPath);
 
         $expected = [
             realpath($appendPath),
@@ -292,7 +294,7 @@ class PathTest extends PHPUnit
     {
         $this->expectException(Exception::class);
 
-        $this->path->set(false, $this->root);
+        $this->path->set('', $this->root);
     }
 
     public function testIsNotVirtual()
@@ -306,9 +308,9 @@ class PathTest extends PHPUnit
 
     public function testHasPrefix()
     {
-        $this->assertIsString(Path::prefix(__DIR__));
-        $this->assertIsString(Path::prefix(dirname(__DIR__)));
-        $this->assertIsString(Path::prefix('P:\\\\Folder\\'));
+        self::assertIsString(Path::prefix(__DIR__));
+        self::assertIsString(Path::prefix(dirname(__DIR__)));
+        self::assertIsString(Path::prefix('P:\\\\Folder\\'));
     }
 
     public function testNoPrefix()
@@ -622,10 +624,10 @@ class PathTest extends PHPUnit
     #### Tools #########################################################################################################
 
     /**
-     * @param $paths
+     * @param string[]|string $paths
      * @return array
      */
-    protected function cleanPath($paths)
+    protected function cleanPath($paths): array
     {
         $return = [];
         $paths = (array)$paths;
@@ -639,9 +641,8 @@ class PathTest extends PHPUnit
 
     /**
      * Normalize slashes and compare paths
-     *
-     * @param $expected
-     * @param $actual
+     * @param string[]|string $expected
+     * @param string[]|string $actual
      */
     protected function is($expected, $actual)
     {
