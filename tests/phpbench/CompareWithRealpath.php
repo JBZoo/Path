@@ -13,6 +13,8 @@
  * @link       https://github.com/JBZoo/Path
  */
 
+declare(strict_types=1);
+
 use JBZoo\Path\Path;
 use JBZoo\Utils\FS;
 use Symfony\Component\Filesystem\Filesystem;
@@ -62,7 +64,10 @@ class CompareWithRealpath
         return $result;
     }
 
-    public function benchJBZooPath()
+    /**
+     * @return string|null
+     */
+    public function benchJBZooPath(): ?string
     {
         $newDir = $this->root . mt_rand();
         $this->fs->mkdir($newDir);

@@ -13,6 +13,8 @@
  * @link       https://github.com/JBZoo/Path
  */
 
+declare(strict_types=1);
+
 namespace JBZoo\PHPUnit;
 
 /**
@@ -26,4 +28,5 @@ class PathCopyrightTest extends AbstractCopyrightTest
      * @var string
      */
     protected $packageName = 'Path';
+    protected $isPhpStrictType = true;
 }
