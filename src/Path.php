@@ -136,7 +136,7 @@ class Path
         $cleanedPath = self::cleanPath($path);
 
         $prefix = (string)self::prefix($cleanedPath);
-        $cleanedPath = (string)\substr($cleanedPath, (int)\strlen($prefix));
+        $cleanedPath = (string)\substr($cleanedPath, \strlen($prefix));
 
         $parts = \array_filter(\explode('/', $cleanedPath), static function ($value) {
             return ($value);
@@ -310,7 +310,7 @@ class Path
     public function url(string $source, bool $isFullUrl = true): ?string
     {
         $details = \explode('?', $source);
-        if ($path = $this->cleanPathInternal((string)($details[0] ?? ''))) {
+        if ($path = $this->cleanPathInternal($details[0] ?? '')) {
             $path = $this->getUrlPath($path, true);
 
             if (!empty($path)) {

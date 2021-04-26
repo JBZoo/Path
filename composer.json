@@ -19,12 +19,12 @@
     "require"           : {
         "php"         : ">=7.2",
 
-        "jbzoo/utils" : "^4.3.0",
-        "jbzoo/data"  : "^4.2.0"
+        "jbzoo/utils" : "^4.4.0",
+        "jbzoo/data"  : "^4.2.1"
     },
 
     "require-dev"       : {
-        "jbzoo/toolbox-dev" : "^2.10.0"
+        "jbzoo/toolbox-dev" : "^2.12.0"
     },
 
     "autoload"          : {
@@ -32,9 +32,6 @@
             "JBZoo\\Path\\" : "src"
         }
     },
-
-    "minimum-stability" : "dev",
-    "prefer-stable"     : true,
 
     "autoload-dev"      : {
         "classmap" : ["tests"]
