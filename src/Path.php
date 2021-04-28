@@ -29,7 +29,7 @@ use function JBZoo\Utils\int;
  * @package JBZoo\Path
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
-class Path
+final class Path
 {
     // Minimal alias name length.
     public const MIN_ALIAS_LENGTH = 2;
