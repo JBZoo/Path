@@ -24,5 +24,4 @@ namespace JBZoo\Path;
  */
 class Exception extends \RuntimeException
 {
-
 }
