@@ -24,12 +24,5 @@ namespace JBZoo\PHPUnit;
  */
 class PathReadmeTest extends AbstractReadmeTest
 {
-    protected $packageName = 'Path';
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->params['strict_types'] = true;
-        $this->params['travis'] = false;
-    }
+    protected string $packageName = 'Path';
 }

@@ -1,10 +1,10 @@
 {
-    "name"              : "jbzoo/path",
-    "type"              : "library",
-    "description"       : "PHP virtual path library",
-    "license"           : "MIT",
-    "keywords"          : ["url", "jbzoo", "path", "realpath", "filesystem", "virtual path"],
-    "authors"           : [
+    "name"         : "jbzoo/path",
+    "type"         : "library",
+    "description"  : "PHP virtual path library",
+    "license"      : "MIT",
+    "keywords"     : ["url", "jbzoo", "path", "realpath", "filesystem", "virtual path"],
+    "authors"      : [
         {
             "name"  : "Denis Smetannikov",
             "email" : "admin@jbzoo.com",
@@ -16,32 +16,35 @@
         }
     ],
 
-    "require"           : {
-        "php"         : ">=7.2",
+    "require"      : {
+        "php"         : ">=7.4",
 
-        "jbzoo/utils" : "^4.5.0",
-        "jbzoo/data"  : "^4.3.0"
+        "jbzoo/utils" : "^4.5|^5.0",
+        "jbzoo/data"  : "^4.3|^5.0"
     },
 
-    "require-dev"       : {
-        "jbzoo/toolbox-dev" : "^3.1.0"
+    "require-dev"  : {
+        "jbzoo/toolbox-dev" : "^4.0.1"
     },
 
-    "autoload"          : {
+    "autoload"     : {
         "psr-4" : {
             "JBZoo\\Path\\" : "src"
         }
     },
 
-    "autoload-dev"      : {
+    "autoload-dev" : {
         "classmap" : ["tests"]
     },
 
-    "config"            : {
-        "optimize-autoloader" : true
+    "config"       : {
+        "optimize-autoloader" : true,
+        "allow-plugins"       : {
+            "composer/package-versions-deprecated" : true
+        }
     },
 
-    "extra"             : {
+    "extra"        : {
         "branch-alias" : {
             "dev-master" : "3.0.x-dev"
         }

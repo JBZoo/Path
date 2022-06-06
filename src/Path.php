@@ -48,21 +48,21 @@ final class Path
      *
      * @var bool
      */
-    protected $isReal = true;
+    protected bool $isReal = true;
 
     /**
      * Holds paths list.
      *
      * @var array
      */
-    protected $paths = [];
+    protected array $paths = [];
 
     /**
      * Root directory
      *
      * @var string|null
      */
-    protected $root;
+    protected ?string $root;
 
     /**
      * Path constructor.
@@ -534,10 +534,8 @@ final class Path
             $result[] = $this->getCurrentPath((string)$path);
         }
 
-        $result = \array_filter($result); // remove empty
-        $result = \array_values($result); // reset keys
-
-        return $result;
+        // remove empty && reset keys
+        return \array_values(\array_filter($result));
     }
 
     /**
