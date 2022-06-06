@@ -24,5 +24,4 @@ namespace JBZoo\PHPUnit;
  */
 class PathComposerTest extends AbstractComposerTest
 {
-
 }

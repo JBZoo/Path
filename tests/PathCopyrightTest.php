@@ -24,9 +24,6 @@ namespace JBZoo\PHPUnit;
  */
 class PathCopyrightTest extends AbstractCopyrightTest
 {
-    /**
-     * @var string
-     */
-    protected $packageName = 'Path';
+    protected $packageName     = 'Path';
     protected $isPhpStrictType = true;
 }

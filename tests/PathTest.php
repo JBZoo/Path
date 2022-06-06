@@ -34,17 +34,17 @@ class PathTest extends PHPUnit
     /**
      * @var string
      */
-    private $root = '';
+    private string $root = '';
 
     /**
      * @var Filesystem
      */
-    private $fs;
+    private Filesystem $fs;
 
     /**
      * @var Path
      */
-    private $path;
+    private Path $path;
 
     protected function setUp(): void
     {
