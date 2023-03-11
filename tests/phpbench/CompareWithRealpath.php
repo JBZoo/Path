@@ -25,10 +25,8 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class CompareWithRealpath
 {
-    /** @var string */
     private string $root;
 
-    /** @var Filesystem */
     private Filesystem $fs;
 
     public function init(): void

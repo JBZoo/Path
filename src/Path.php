@@ -22,25 +22,21 @@ use JBZoo\Utils\Sys;
 use JBZoo\Utils\Url;
 
 use function JBZoo\Utils\int;
+use function JBZoo\Utils\isStrEmpty;
 
 /**
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 final class Path
 {
-    // Minimal alias name length.
     public const MIN_ALIAS_LENGTH = 2;
 
-    // Mod prepend rule add paths.
+    // Modifiers adding rules
     public const MOD_PREPEND = 'prepend';
+    public const MOD_APPEND  = 'append';
+    public const MOD_RESET   = 'reset';
 
-    // Mod append rule add paths.
-    public const MOD_APPEND = 'append';
-
-    // Reset all registered paths.
-    public const MOD_RESET = 'reset';
-
-    /** Flag of result path (If true, is real path. If false, is relative path). */
+    /** Flag of result path (If true, is real path. If false, is relative path) */
     private bool $isReal = true;
 
     /** Holds paths list. */
@@ -51,7 +47,7 @@ final class Path
 
     public function __construct(?string $root = null)
     {
-        $root = $root ?: Sys::getDocRoot();
+        $root = isStrEmpty($root) ? Sys::getDocRoot() : $root;
         $this->setRoot($root);
     }
 
@@ -76,7 +72,8 @@ final class Path
 
         if ($mode === self::MOD_RESET) { // Reset mode
             $this->paths[$alias] = [];
-            $mode                = self::MOD_PREPEND; // Add new paths in Prepend mode
+
+            $mode = self::MOD_PREPEND; // Add new paths in Prepend mode
         }
 
         foreach ($paths as $path) {
@@ -85,8 +82,8 @@ final class Path
             }
 
             $path = self::cleanPath($path);
-            if ($path && !\in_array($path, $this->paths[$alias], true)) {
-                if (\preg_match('/^' . \preg_quote($alias . ':', '') . '/i', $path)) {
+            if ($path !== '' && !\in_array($path, $this->paths[$alias], true)) {
+                if (\preg_match('/^' . \preg_quote($alias . ':', '') . '/i', $path) > 0) {
                     throw new Exception("Added looped path \"{$path}\" to key \"{$alias}\"");
                 }
 
@@ -136,7 +133,7 @@ final class Path
      */
     public function getRoot(): ?string
     {
-        if (!$this->root) {
+        if ($this->root === null) {
             throw new Exception('Please, set the root directory');
         }
 
@@ -202,8 +199,12 @@ final class Path
      */
     public function setRoot(?string $newRootPath): self
     {
-        if (!$newRootPath || !\is_dir($newRootPath)) {
-            throw new Exception("Not found directory: {$newRootPath}");
+        if ($newRootPath === '' || $newRootPath === null) {
+            throw new Exception("New root path is empty: {$newRootPath}");
+        }
+
+        if (!\is_dir($newRootPath)) {
+            throw new Exception("Directory not found: {$newRootPath}");
         }
 
         $this->root = self::cleanPath($newRootPath);
@@ -218,18 +219,21 @@ final class Path
     public function url(string $source, bool $isFullUrl = true): ?string
     {
         $details = \explode('?', $source);
-        if ($path = $this->cleanPathInternal($details[0] ?? '')) {
-            $path = $this->getUrlPath($path, true);
 
-            if (!empty($path)) {
+        $path = $this->cleanPathInternal($details[0] ?? '');
+
+        if ($path !== '' && $path !== null) {
+            $urlPath = $this->getUrlPath($path, true);
+
+            if ($urlPath !== '' && $urlPath !== null) {
                 if (isset($details[1])) {
-                    $path .= '?' . $details[1];
+                    $urlPath .= '?' . $details[1];
                 }
 
-                $path = '/' . $path;
-                $root = Url::root();
+                $urlPath = '/' . $urlPath;
+                $root    = Url::root();
 
-                return $isFullUrl ? "{$root}{$path}" : $path;
+                return $isFullUrl ? "{$root}{$urlPath}" : $urlPath;
             }
         }
 
@@ -295,7 +299,9 @@ final class Path
     {
         $path = self::cleanPath($path);
 
-        return \preg_match('|^(?P<prefix>([a-zA-Z]+:)?//?)|', $path, $matches) ? $matches['prefix'] : null;
+        return \preg_match('|^(?P<prefix>([a-zA-Z]+:)?//?)|', $path, $matches) > 0
+            ? $matches['prefix']
+            : null;
     }
 
     /**
@@ -304,7 +310,9 @@ final class Path
      */
     private function addNewPath(string $path, string $alias, string $mode): self
     {
-        if ($cleanPath = $this->cleanPathInternal($path)) {
+        $cleanPath = $this->cleanPathInternal($path);
+
+        if ($cleanPath !== null && $cleanPath !== '') {
             if ($mode === self::MOD_PREPEND) {
                 \array_unshift($this->paths[$alias], $cleanPath);
             }
@@ -327,10 +335,10 @@ final class Path
             return self::cleanPath($path);
         }
 
-        if (self::hasCDBack($path)) {
+        if (self::hasCDBack($path) > 0) {
             $realpath = self::cleanPath((string)\realpath($path));
 
-            return $realpath ?: null;
+            return $realpath !== '' ? $realpath : null;
         }
 
         return self::cleanPath($path);
@@ -342,21 +350,26 @@ final class Path
      */
     private function getUrlPath(string $path, bool $exitsFile = false): ?string
     {
-        if (!$this->root) {
-            throw new Exception('Please, set the root directory');
+        if ($this->root === null || $this->root === '') {
+            throw new Exception('Please, setup the root directory');
         }
 
-        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-        if ($path = $this->cleanPathInternal($path)) {
+        $path = $this->cleanPathInternal($path);
+        if ($path !== null && $path !== '') {
             if ($this->isVirtual($path)) {
-                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                 $path = $this->get($path);
             }
 
             $subject = $path;
             $pattern = '/^' . \preg_quote($this->root, '/') . '/i';
 
-            if ($path && $exitsFile && !$this->isVirtual($path) && !\file_exists($path)) {
+            if (
+                $path !== null
+                && $path !== ''
+                && $exitsFile
+                && !$this->isVirtual($path)
+                && !\file_exists($path)
+            ) {
                 $subject = null;
             }
 
@@ -372,7 +385,10 @@ final class Path
      */
     private function parse(string $source): array
     {
-        [$alias, $path] = \explode(':', $source, 2);
+        $sourceParts = \explode(':', $source, 2);
+
+        $alias = $sourceParts[0] ?? '';
+        $path  = $sourceParts[1] ?? '';
 
         $path  = \ltrim($path, '\\/');
         $paths = $this->resolvePaths($alias);
@@ -393,7 +409,8 @@ final class Path
         $result = [];
 
         foreach ($paths as $originalPath) {
-            if ($this->isVirtual($originalPath) && $realPath = $this->get($originalPath)) {
+            $realPath = $this->get($originalPath);
+            if ($realPath !== null && $realPath !== '' && $this->isVirtual($originalPath)) {
                 $path = $realPath;
             } else {
                 $path = $this->cleanPathInternal($originalPath);
@@ -411,7 +428,11 @@ final class Path
      */
     private function getCurrentPath(string $path): ?string
     {
-        return (string)($this->isReal ? \realpath($path) : $path) ?: null;
+        $realpath    = \realpath($path);
+        $realpath    = $realpath !== false ? $realpath : null;
+        $currentPath = (string)($this->isReal ? $realpath : $path);
+
+        return $currentPath !== '' ? $currentPath : null;
     }
 
     /**
@@ -435,9 +456,8 @@ final class Path
 
     /**
      * Find actual file or directory in the paths.
-     * @param array|string $paths
      */
-    private static function findViaGlob($paths, string $file): array
+    private static function findViaGlob(array|string $paths, string $file): array
     {
         $paths = (array)$paths;
         $file  = \ltrim($file, '\\/');
@@ -447,9 +467,8 @@ final class Path
         $fullPath = self::clean($path . '/' . $file);
 
         $paths = \glob($fullPath, \GLOB_BRACE);
-        $paths = \array_filter((array)$paths);
 
-        return $paths ?: [];
+        return \array_filter((array)$paths);
     }
 
     /**
