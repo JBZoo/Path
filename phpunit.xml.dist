@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-    JBZoo Toolbox - Path
+    JBZoo Toolbox - Path.
 
     This file is part of the JBZoo Toolbox project.
     For the full copyright and license information, please view the LICENSE
     file that was distributed with this source code.
 
-    @package    Path
     @license    MIT
     @copyright  Copyright (C) JBZoo.com, All rights reserved.
-    @link       https://github.com/JBZoo/Path
+    @see        https://github.com/JBZoo/Path
 -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          bootstrap="tests/autoload.php"

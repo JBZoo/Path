@@ -1,28 +1,27 @@
 <?php
 
 /**
- * JBZoo Toolbox - Path
+ * JBZoo Toolbox - Path.
  *
  * This file is part of the JBZoo Toolbox project.
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
- * @package    Path
  * @license    MIT
  * @copyright  Copyright (C) JBZoo.com, All rights reserved.
- * @link       https://github.com/JBZoo/Path
+ * @see        https://github.com/JBZoo/Path
  */
 
 declare(strict_types=1);
 
-if (!defined('ROOT_PATH')) { // for PHPUnit process isolation
-    define('ROOT_PATH', dirname(__DIR__));
+if (!\defined('ROOT_PATH')) { // for PHPUnit process isolation
+    \define('ROOT_PATH', \dirname(__DIR__));
 }
 
 // main autoload
-if ($autoload = realpath(ROOT_PATH . '/vendor/autoload.php')) {
+if ($autoload = \realpath(ROOT_PATH . '/vendor/autoload.php')) {
     require_once $autoload;
 } else {
-    echo 'Please execute "composer update" !' . PHP_EOL;
+    echo 'Please execute "composer update" !' . \PHP_EOL;
     exit(1);
 }
