@@ -16,12 +16,12 @@ declare(strict_types=1);
 
 $default = include __DIR__ . '/vendor/jbzoo/codestyle/src/phan.php';
 
-$config = array_merge($default, [
+$config = \array_merge($default, [
     'directory_list' => [
         'src',
 
         // Libs
         'vendor/jbzoo/data',
-        'vendor/jbzoo/utils'
-    ]
+        'vendor/jbzoo/utils',
+    ],
 ]);

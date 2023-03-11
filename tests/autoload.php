@@ -14,14 +14,14 @@
 
 declare(strict_types=1);
 
-if (!defined('ROOT_PATH')) { // for PHPUnit process isolation
-    define('ROOT_PATH', dirname(__DIR__));
+if (!\defined('ROOT_PATH')) { // for PHPUnit process isolation
+    \define('ROOT_PATH', \dirname(__DIR__));
 }
 
 // main autoload
-if ($autoload = realpath(ROOT_PATH . '/vendor/autoload.php')) {
+if ($autoload = \realpath(ROOT_PATH . '/vendor/autoload.php')) {
     require_once $autoload;
 } else {
-    echo 'Please execute "composer update" !' . PHP_EOL;
+    echo 'Please execute "composer update" !' . \PHP_EOL;
     exit(1);
 }

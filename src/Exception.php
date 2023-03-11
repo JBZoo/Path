@@ -16,11 +16,6 @@ declare(strict_types=1);
 
 namespace JBZoo\Path;
 
-/**
- * Class Exception
- *
- * @package JBZoo\Path
- */
 class Exception extends \RuntimeException
 {
 }
