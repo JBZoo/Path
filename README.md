@@ -1,7 +1,7 @@
 # JBZoo / Path
 
 [![CI](https://github.com/JBZoo/Path/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/JBZoo/Path/actions/workflows/main.yml?query=branch%3Amaster)    [![Coverage Status](https://coveralls.io/repos/github/JBZoo/Path/badge.svg?branch=master)](https://coveralls.io/github/JBZoo/Path?branch=master)    [![Psalm Coverage](https://shepherd.dev/github/JBZoo/Path/coverage.svg)](https://shepherd.dev/github/JBZoo/Path)    [![Psalm Level](https://shepherd.dev/github/JBZoo/Path/level.svg)](https://shepherd.dev/github/JBZoo/Path)    [![CodeFactor](https://www.codefactor.io/repository/github/jbzoo/path/badge)](https://www.codefactor.io/repository/github/jbzoo/path/issues)    
-[![Stable Version](https://poser.pugx.org/jbzoo/path/version)](https://packagist.org/packages/jbzoo/path/)    [![Total Downloads](https://poser.pugx.org/jbzoo/path/downloads)](https://packagist.org/packages/jbzoo/path/stats)    [![Dependents](https://poser.pugx.org/jbzoo/path/dependents)](https://packagist.org/packages/jbzoo/path/dependents?order_by=downloads)    [![Visitors](https://visitor-badge.glitch.me/badge?page_id=jbzoo.path)]()    [![GitHub License](https://img.shields.io/github/license/jbzoo/path)](https://github.com/JBZoo/Path/blob/master/LICENSE)
+[![Stable Version](https://poser.pugx.org/jbzoo/path/version)](https://packagist.org/packages/jbzoo/path/)    [![Total Downloads](https://poser.pugx.org/jbzoo/path/downloads)](https://packagist.org/packages/jbzoo/path/stats)    [![Dependents](https://poser.pugx.org/jbzoo/path/dependents)](https://packagist.org/packages/jbzoo/path/dependents?order_by=downloads)    [![GitHub License](https://img.shields.io/github/license/jbzoo/path)](https://github.com/JBZoo/Path/blob/master/LICENSE)
 
 
 
