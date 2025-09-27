@@ -43,7 +43,7 @@ final class Path
     private array $paths = [];
 
     /** Root directory. */
-    private ?string $root;
+    private string $root;
 
     public function __construct(?string $root = null)
     {
@@ -83,7 +83,7 @@ final class Path
 
             $path = self::cleanPath($path);
             if ($path !== '' && !\in_array($path, $this->paths[$alias], true)) {
-                if (\preg_match('/^' . \preg_quote($alias . ':', '') . '/i', $path) > 0) {
+                if (\preg_match('/^' . \preg_quote($alias . ':', null) . '/i', $path) > 0) {
                     throw new Exception("Added looped path \"{$path}\" to key \"{$alias}\"");
                 }
 
@@ -109,7 +109,7 @@ final class Path
      * Get absolute path to a file or a directory.
      * @param string $source (example: "default:file.txt")
      */
-    public function glob(string $source): ?array
+    public function glob(string $source): array
     {
         $parsedSource = $this->parse($source);
 
@@ -131,12 +131,8 @@ final class Path
     /**
      * Get root directory.
      */
-    public function getRoot(): ?string
+    public function getRoot(): string
     {
-        if ($this->root === null) {
-            throw new Exception('Please, set the root directory');
-        }
-
         return $this->root;
     }
 
@@ -220,7 +216,11 @@ final class Path
     {
         $details = \explode('?', $source);
 
-        $path = $this->cleanPathInternal($details[0] ?? '');
+        if ($details[0] !== '') {
+            $path = $this->cleanPathInternal($details[0]);
+        } else {
+            throw new Exception("Invalid source: {$source}");
+        }
 
         if ($path !== '' && $path !== null) {
             $urlPath = $this->getUrlPath($path, true);
@@ -244,7 +244,7 @@ final class Path
      * Get relative path to file or directory.
      * @param string $source (example: "default:file.txt")
      */
-    public function rel(string $source): ?string
+    public function rel(string $source): string
     {
         $fullpath = (string)$this->get($source);
 
@@ -257,7 +257,7 @@ final class Path
      */
     public function relGlob(string $source): array
     {
-        $list = (array)$this->glob($source);
+        $list = $this->glob($source);
 
         foreach ($list as $key => $item) {
             $list[$key] = FS::getRelative($item, $this->root, '/');
@@ -278,7 +278,7 @@ final class Path
         $prefix      = (string)self::prefix($cleanedPath);
         $cleanedPath = \substr($cleanedPath, \strlen($prefix));
 
-        $parts = \array_filter(\explode('/', $cleanedPath), static fn ($value) => $value);
+        $parts = \array_filter(\explode('/', $cleanedPath), static fn ($value) => $value); // @phpstan-ignore-line
 
         foreach ($parts as $part) {
             if ($part === '..') {
@@ -350,7 +350,7 @@ final class Path
      */
     private function getUrlPath(string $path, bool $exitsFile = false): ?string
     {
-        if ($this->root === null || $this->root === '') {
+        if ($this->root === '') {
             throw new Exception('Please, setup the root directory');
         }
 
@@ -387,10 +387,10 @@ final class Path
     {
         $sourceParts = \explode(':', $source, 2);
 
-        $alias = $sourceParts[0] ?? '';
+        $alias = $sourceParts[0];
         $path  = $sourceParts[1] ?? '';
 
-        $path  = \ltrim($path, '\\/');
+        $path  = \ltrim($path, '\/');
         $paths = $this->resolvePaths($alias);
 
         return [$alias, $paths, $path];
@@ -441,7 +441,7 @@ final class Path
     private static function find(array|string $paths, string $file): ?string
     {
         $paths = (array)$paths;
-        $file  = \ltrim($file, '\\/');
+        $file  = \ltrim($file, '\/');
 
         foreach ($paths as $path) {
             $fullPath = self::clean($path . '/' . $file);
@@ -460,7 +460,7 @@ final class Path
     private static function findViaGlob(array|string $paths, string $file): array
     {
         $paths = (array)$paths;
-        $file  = \ltrim($file, '\\/');
+        $file  = \ltrim($file, '\/');
 
         $path = Arr::first($paths);
 
