@@ -65,7 +65,7 @@ class PathTest extends PHPUnit
         $this->fs->mkdir($exportDir);
 
         $default->set('defau/lt', $defaultDir);
-        $import->set('Defau\\l//t', $importDir);
+        $import->set('Defau\l//t', $importDir);
         $export->set('()de~~fau+!#$lt', [
             $exportDir,
             $importDir,
@@ -93,30 +93,30 @@ class PathTest extends PHPUnit
         isSame("{$current}/{$name1}/file.txt", $default->url('default:\file.txt'));
         isSame("{$current}/{$name1}/file.txt", $default->url('default:/file.txt'));
         isSame("{$current}/{$name1}/file.txt", $default->url('default:////file.txt'));
-        isSame("{$current}/{$name1}/file.txt", $default->url('default:\\\\file.txt'));
+        isSame("{$current}/{$name1}/file.txt", $default->url('default:\\\file.txt'));
         isSame("{$current}/{$name1}/file.txt", $default->url($defaultDir . DS . 'file.txt'));
         isSame("{$current}/{$name1}/file.txt", $default->url($defaultDir . '///file.txt'));
-        isSame("{$current}/{$name1}/file.txt", $default->url($defaultDir . '\\\\file.txt'));
+        isSame("{$current}/{$name1}/file.txt", $default->url($defaultDir . '\\\file.txt'));
 
         isSame("{$current}/{$name2}/simple.txt", $import->url('Default:simple.txt'));
         isSame("{$current}/{$name2}/simple.txt", $import->url('Default:\simple.txt'));
         isSame("{$current}/{$name2}/simple.txt", $import->url('Default:/simple.txt'));
         isSame("{$current}/{$name2}/simple.txt", $import->url('Default:////simple.txt'));
-        isSame("{$current}/{$name2}/simple.txt", $import->url('Default:\\\\simple.txt'));
+        isSame("{$current}/{$name2}/simple.txt", $import->url('Default:\\\simple.txt'));
         isSame("{$current}/{$name2}/simple.txt", $import->url($importDir . DS . 'simple.txt'));
         isSame("{$current}/{$name2}/simple.txt", $import->url($importDir . '///simple.txt'));
-        isSame("{$current}/{$name2}/simple.txt", $import->url($importDir . '\\\\simple.txt'));
+        isSame("{$current}/{$name2}/simple.txt", $import->url($importDir . '\\\simple.txt'));
 
         isSame("{$current}/{$name3}/my-file.txt", $export->url('default:my-file.txt'));
         isSame("{$current}/{$name3}/my-file.txt", $export->url('default:\my-file.txt'));
         isSame("{$current}/{$name3}/my-file.txt", $export->url('default:/my-file.txt'));
         isSame("{$current}/{$name2}/simple.txt", $export->url('default:////simple.txt'));
-        isSame("{$current}/{$name2}/simple.txt", $export->url('default:\\\\simple.txt'));
+        isSame("{$current}/{$name2}/simple.txt", $export->url('default:\\\simple.txt'));
         isSame("{$current}/{$name3}/my-file.txt", $export->url($exportDir . DS . 'my-file.txt'));
         isSame("{$current}/{$name3}/my-file.txt", $export->url($exportDir . '///my-file.txt'));
-        isSame("{$current}/{$name3}/my-file.txt", $export->url($exportDir . '\\\\my-file.txt'));
+        isSame("{$current}/{$name3}/my-file.txt", $export->url($exportDir . '\\\my-file.txt'));
 
-        isSame("{$current}/{$name3}/my-file.txt?ver=123", $export->url($exportDir . '\\\\my-file.txt?ver=123'));
+        isSame("{$current}/{$name3}/my-file.txt?ver=123", $export->url($exportDir . '\\\my-file.txt?ver=123'));
 
         $this->fs->remove([$defaultDir, $importDir, $exportDir]);
     }
@@ -295,7 +295,7 @@ class PathTest extends PHPUnit
     {
         self::assertIsString(Path::prefix(__DIR__));
         self::assertIsString(Path::prefix(\dirname(__DIR__)));
-        self::assertIsString(Path::prefix('P:\\\\Folder\\'));
+        self::assertIsString(Path::prefix('P:\\\Folder\\'));
     }
 
     public function testNoPrefix(): void
@@ -364,10 +364,10 @@ class PathTest extends PHPUnit
 
         $this->is($file5, $this->path->get('default:simple/file.txt'));
         $this->is($file5, $this->path->get('default:simple\file.txt'));
-        $this->is($file5, $this->path->get('default:simple\\\\file.txt'));
+        $this->is($file5, $this->path->get('default:simple\\\file.txt'));
         $this->is($file5, $this->path->get('default:simple////file.txt'));
         $this->is($file5, $this->path->get('default:simple/file.txt'));
-        $this->is($file5, $this->path->get('default:\\simple/file.txt'));
+        $this->is($file5, $this->path->get('default:\simple/file.txt'));
         $this->is($file5, $this->path->get('default:\/simple/file.txt'));
 
         isNull($this->path->get('alias:/simple/file.txt'));
@@ -469,7 +469,7 @@ class PathTest extends PHPUnit
 
         $this->is($file1, $this->path->url('default:file1.txt'));
         $this->is($file3, $this->path->url('default:my-folder2/my-file.txt'));
-        $this->is($file3, $this->path->url('default:my-folder2\\\\my-file.txt'));
+        $this->is($file3, $this->path->url('default:my-folder2\\\my-file.txt'));
         $this->is($file3, $this->path->url('default:\my-folder2\my-file.txt'));
 
         $this->is($file1, $this->path->url($path2 . DS . 'file1.txt'));

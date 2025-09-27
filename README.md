@@ -1,6 +1,6 @@
 # JBZoo / Path
 
-[![CI](https://github.com/JBZoo/Path/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/JBZoo/Path/actions/workflows/main.yml?query=branch%3Amaster)    [![Coverage Status](https://coveralls.io/repos/github/JBZoo/Path/badge.svg?branch=master)](https://coveralls.io/github/JBZoo/Path?branch=master)    [![Psalm Coverage](https://shepherd.dev/github/JBZoo/Path/coverage.svg)](https://shepherd.dev/github/JBZoo/Path)    [![Psalm Level](https://shepherd.dev/github/JBZoo/Path/level.svg)](https://shepherd.dev/github/JBZoo/Path)    [![CodeFactor](https://www.codefactor.io/repository/github/jbzoo/path/badge)](https://www.codefactor.io/repository/github/jbzoo/path/issues)    
+[![CI](https://github.com/JBZoo/Path/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/JBZoo/Path/actions/workflows/main.yml?query=branch%3Amaster)    [![Coverage Status](https://coveralls.io/repos/github/JBZoo/Path/badge.svg?branch=master)](https://coveralls.io/github/JBZoo/Path?branch=master)    [![Psalm Coverage](https://shepherd.dev/github/JBZoo/Path/coverage.svg)](https://shepherd.dev/github/JBZoo/Path)    [![Psalm Level](https://shepherd.dev/github/JBZoo/Path/level.svg)](https://shepherd.dev/github/JBZoo/Path)    [![CodeFactor](https://www.codefactor.io/repository/github/jbzoo/path/badge)](https://www.codefactor.io/repository/github/jbzoo/path/issues)
 [![Stable Version](https://poser.pugx.org/jbzoo/path/version)](https://packagist.org/packages/jbzoo/path/)    [![Total Downloads](https://poser.pugx.org/jbzoo/path/downloads)](https://packagist.org/packages/jbzoo/path/stats)    [![Dependents](https://poser.pugx.org/jbzoo/path/dependents)](https://packagist.org/packages/jbzoo/path/dependents?order_by=downloads)    [![GitHub License](https://img.shields.io/github/license/jbzoo/path)](https://github.com/JBZoo/Path/blob/master/LICENSE)
 
 
@@ -64,7 +64,7 @@ Path::clean('path\\to//simple\\folder');    //  result: 'path/to/simple/folder'
 See details [here](tests/phpbench/CompareWithRealpath.php)
 
 subject | groups | its | revs | mean | stdev | rstdev | mem_real | diff
- --- | --- | --- | --- | --- | --- | --- | --- | --- 
+ --- | --- | --- | --- | --- | --- | --- | --- | ---
 benchBaseline |  | 3 | 10000 | 2.53μs | 0.11μs | 4.39% | 6,291,456b | 1.00x
 benchNative |  | 3 | 10000 | 138.22μs | 0.46μs | 0.33% | 6,291,456b | 54.64x
 benchJBZooPath |  | 3 | 10000 | 192.58μs | 0.87μs | 0.45% | 6,291,456b | 76.13x
