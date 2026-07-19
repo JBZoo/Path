@@ -83,7 +83,7 @@ final class Path
 
             $path = self::cleanPath($path);
             if ($path !== '' && !\in_array($path, $this->paths[$alias], true)) {
-                if (\preg_match('/^' . \preg_quote($alias . ':', null) . '/i', $path) > 0) {
+                if (\preg_match('/^' . \preg_quote($alias . ':', '/') . '/i', $path) > 0) {
                     throw new Exception("Added looped path \"{$path}\" to key \"{$alias}\"");
                 }
 
