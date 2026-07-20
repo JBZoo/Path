@@ -57,7 +57,7 @@ tests/
 
 ## Development Notes
 
-- **PHP Version**: Requires PHP 8.2+
+- **PHP Version**: Requires PHP 8.3+
 - **Code Style**: Uses JBZoo codestyle standards (enforced via make codestyle)
 - **Testing**: PHPUnit with coverage reporting to build/ directory
 - **Dependencies**: Managed via Composer, uses JBZoo ecosystem libraries
